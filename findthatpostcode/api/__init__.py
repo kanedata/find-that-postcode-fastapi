@@ -39,15 +39,14 @@ async def single_hash(
     return {"data": list(postcode_items)}
 
 
-# @router.get("/hashes.json", response_model=Postcode)
-# async def multi_hash(db: Session = Depends(get_db)):
-#     postcode_item = get_postcode(db, postcode)
-#     if not postcode_item:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND,
-#             detail="Postcode {} not found".format(postcode),
-#         )
-#     return postcode_item
+@router.get("/hashes.json")
+async def multiple_hash(
+    hashes: list[str] = Query([]),
+    fields: list[str] = Query([]),
+    db: Session = Depends(get_db),
+):
+    postcode_items = crud.get_postcode_by_hash(db, hashes, fields=fields)
+    return {"data": list(postcode_items)}
 
 
 @router.get(

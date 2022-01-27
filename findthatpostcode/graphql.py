@@ -42,6 +42,18 @@ class Query:
                 conn, lat, long, fields=get_selected_fields(info)
             )
 
+    @strawberry.field
+    def get_hashes(self, hashes: List[str], info: Info) -> List[schemas.Postcode]:
+
+        db = get_db()
+        for conn in db:
+            postcode_items = list(
+                crud.get_postcode_by_hash(
+                    conn, hashes, fields=get_selected_fields(info)
+                )
+            )
+            return postcode_items
+
 
 schema = strawberry.Schema(Query)
 
