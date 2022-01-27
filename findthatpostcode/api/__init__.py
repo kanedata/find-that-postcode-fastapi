@@ -9,7 +9,6 @@ from findthatpostcode.schemas import HTTPNotFoundError, NearestPoint, Postcode
 
 router = APIRouter(
     prefix="/api/v1",
-    tags=["postcodes"],
     responses={
         status.HTTP_404_NOT_FOUND: {
             "description": "Not found",
@@ -19,7 +18,11 @@ router = APIRouter(
 )
 
 
-@router.get("/postcodes/{postcode}.json", response_model=Postcode)
+@router.get(
+    "/postcodes/{postcode}.json",
+    response_model=Postcode,
+    tags=["Get postcode"],
+)
 async def read_postcode(postcode: str, db: Session = Depends(get_db)):
     postcode_item = crud.get_postcode(db, postcode)
     if not postcode_item:
@@ -30,8 +33,8 @@ async def read_postcode(postcode: str, db: Session = Depends(get_db)):
     return postcode_item
 
 
-@router.get("/hash/{hash}")
-@router.get("/hash/{hash}.json")
+@router.get("/hash/{hash}", tags=["Postcode hash"])
+@router.get("/hash/{hash}.json", tags=["Postcode hash"])
 async def single_hash(
     hash: str, fields: list[str] = Query([]), db: Session = Depends(get_db)
 ):
@@ -39,7 +42,7 @@ async def single_hash(
     return {"data": list(postcode_items)}
 
 
-@router.get("/hashes.json")
+@router.get("/hashes.json", tags=["Postcode hash"])
 async def multiple_hash(
     hashes: list[str] = Query([]),
     fields: list[str] = Query([]),
@@ -52,7 +55,7 @@ async def multiple_hash(
 @router.get(
     "/points/{lat},{long}.json",
     response_model=NearestPoint,
-    tags=["points"],
+    tags=["Get a point"],
     description="Get nearest postcode to a Lat, Long",
 )
 async def find_nearest_point(lat: float, long: float, db: Session = Depends(get_db)):

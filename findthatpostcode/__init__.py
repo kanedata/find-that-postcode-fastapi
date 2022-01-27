@@ -14,7 +14,7 @@ app = FastAPI(
     },
     openapi_tags=[
         {
-            "name": "postcodes",
+            "name": "Get postcode",
             "description": "Postcode lookup",
         }
     ]

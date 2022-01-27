@@ -1,7 +1,17 @@
 import re
 
 from geoalchemy2 import Geometry
-from sqlalchemy import Boolean, Column, Date, DateTime, Float, Integer, String
+from sqlalchemy import (
+    ARRAY,
+    JSON,
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    Float,
+    Integer,
+    String,
+)
 
 from findthatpostcode.database import Base, UpdatingTable
 
@@ -86,3 +96,55 @@ class Postcode(UpdatingTable, Base):
             last_part[0] = "0"
 
         return "%s %s" % ("".join(first_part), "".join(last_part))
+
+
+class Area(UpdatingTable, Base):
+    __tablename__ = "areas"
+    code = Column(String(9), primary_key=True)
+    name = Column(String(255), index=True)
+    name_welsh = Column(String(255))
+    areachect = Column(Float)
+    areaehect = Column(Float)
+    areaihect = Column(Float)
+    arealhect = Column(Float)
+    child_count = Column(Integer)
+    child_counts = Column(JSON)
+    date_end = Column(Date)
+    date_start = Column(Date)
+    entity = Column(String(3))
+    equivalents = Column(JSON())
+    owner = Column(String(255))
+    parent = Column(String(9))
+    predecessor = Column(ARRAY(String(9)))
+    successor = Column(ARRAY(String(9)))
+    sort_order = Column(String(9))
+    statutory_instrument_id = Column(String(255))
+    statutory_instrument_title = Column(String(255))
+
+    geom = Column(Geometry("MULTIPOLYGON", srid=4326))
+
+    @property
+    def has_boundary(self):
+        return self.geom is not None
+
+
+class Entity(Base):
+    __tablename__ = "entities"
+    code = Column(String(9), primary_key=True)
+    name = Column(String(255), index=True)
+    abbreviation = Column(String(255))
+    theme = Column(String(255))
+    coverage = Column(String(255))
+    related_codes = Column(ARRAY(String(255)))
+    status = Column(String(255))
+    live_instances = Column(Integer())
+    archived_instances = Column(Integer())
+    crossborder_instances = Column(Integer())
+    last_modified = Column(DateTime())
+    current_code_first = Column(String(255))
+    current_code_last = Column(String(255))
+    reserved_code = Column(String(255))
+    owner = Column(String(255))
+    date_introduced = Column(Date())
+    date_start = Column(Date())
+    type = Column(String(255))

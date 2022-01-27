@@ -9,10 +9,9 @@ import zipfile
 
 import requests
 import requests_cache
-from sqlalchemy.dialects import postgresql
 
 from findthatpostcode.commands.import_app import app
-from findthatpostcode.database import get_db
+from findthatpostcode.database import get_db, upsert_statement
 from findthatpostcode.models import Postcode
 from findthatpostcode.settings import NSPL_URL
 
@@ -93,15 +92,7 @@ def nspl(url: str = NSPL_URL, use_cache: bool = True):
                     pcount += 1
 
                 # save the postcodes
-                insert_stmt = postgresql.insert(Postcode.__table__)
-                update_columns = {
-                    col.name: col
-                    for col in insert_stmt.excluded
-                    if col.name not in ("id",)
-                }
-                upsert_stmt = insert_stmt.on_conflict_do_update(
-                    index_elements=[Postcode.pcd], set_=update_columns
-                )
+                upsert_stmt = upsert_statement(Postcode, [Postcode.pcd])
                 conn.execute(upsert_stmt, postcodes)
                 postcodes = []
         conn.commit()

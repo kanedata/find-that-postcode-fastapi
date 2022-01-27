@@ -1,4 +1,5 @@
 from sqlalchemy import Boolean, Column, DateTime, create_engine
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -16,6 +17,16 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def upsert_statement(model, index_elements):
+    insert_stmt = postgresql.insert(model.__table__)
+    update_columns = {
+        col.name: col for col in insert_stmt.excluded if col.name not in ("id",)
+    }
+    return insert_stmt.on_conflict_do_update(
+        index_elements=index_elements, set_=update_columns
+    )
 
 
 class UpdatingTable:
