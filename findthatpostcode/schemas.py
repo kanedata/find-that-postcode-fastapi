@@ -25,32 +25,47 @@ class Postcode:
     osgrdind: Optional[int] = None
     oa11: Optional[str] = Field(None, title="Output Area 2011 (GSS Code)")
     cty: Optional[str] = Field(None, title="County (GSS Code)")
+    cty_name: Optional[str] = Field(None, title="County (Name)")
     ced: Optional[str] = None
     laua: Optional[str] = Field(None, title="Local Authority (GSS Code)")
+    laua_name: Optional[str] = Field(None, title="Local Authority (Name)")
     ward: Optional[str] = Field(None, title="Ward (GSS Code)")
+    ward_name: Optional[str] = Field(None, title="Ward (Name)")
     hlthau: Optional[str] = Field(None, title="Health Authority (GSS Code)")
+    hlthau_name: Optional[str] = Field(None, title="Health Authority (Name)")
     nhser: Optional[str] = None
     ctry: Optional[str] = Field(None, title="Country (GSS Code)")
+    ctry_name: Optional[str] = Field(None, title="Country (Name)")
     rgn: Optional[str] = Field(None, title="Region (GSS Code)")
+    rgn_name: Optional[str] = Field(None, title="Region (Name)")
     pcon: Optional[str] = Field(None, title="Parliamentary Constituency (GSS Code)")
+    pcon_name: Optional[str] = Field(None, title="Parliamentary Constituency (Name)")
     eer: Optional[str] = None
     teclec: Optional[str] = None
     ttwa: Optional[str] = Field(None, title="Travel to Work Area (GSS Code)")
+    ttwa_name: Optional[str] = Field(None, title="Travel to Work Area (Name)")
     pct: Optional[str] = Field(None, title="Primary Care Trust (GSS Code)")
+    pct_name: Optional[str] = Field(None, title="Primary Care Trust (Name)")
     nuts: Optional[str] = None
     npark: Optional[str] = Field(None, title="National Park (GSS Code)")
+    npark_name: Optional[str] = Field(None, title="National Park (Name)")
     lsoa11: Optional[str] = Field(None, title="Lower Super Output Area (GSS Code)")
+    lsoa11_name: Optional[str] = Field(None, title="Lower Super Output Area (Name)")
     msoa11: Optional[str] = Field(None, title="Middle Super Output Area (GSS Code)")
+    msoa11_name: Optional[str] = Field(None, title="Middle Super Output Area (Name)")
     wz11: Optional[str] = None
-    ccg: Optional[str] = None
+    ccg: Optional[str] = Field(None, title="Clinical Commissioning Group (GSS Code)")
+    ccg_name: Optional[str] = Field(None, title="Clinical Commissioning Group (Name)")
     bua11: Optional[str] = None
     buasd11: Optional[str] = None
     ru11ind: Optional[str] = None
     oac11: Optional[str] = None
-    lat: Optional[float] = None
-    long: Optional[float] = None
-    lep1: Optional[str] = None
-    lep2: Optional[str] = None
+    lat: Optional[float] = Field(None, title="Latitude")
+    long: Optional[float] = Field(None, title="Longitude")
+    lep1: Optional[str] = Field(None, title="Local Enterprise Partnership (GSS Code)")
+    lep1_name: Optional[str] = Field(None, title="Local Enterprise Partnership (Name)")
+    lep2: Optional[str] = Field(None, title="Local Enterprise Partnership 2 (GSS Code)")
+    lep2_name: Optional[str] = Field(None, title="Local Enterprise Partnership 2 (Name)")
     pfa: Optional[str] = None
     imd: Optional[int] = None
     calncv: Optional[str] = None

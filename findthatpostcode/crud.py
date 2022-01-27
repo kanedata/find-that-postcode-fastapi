@@ -28,6 +28,7 @@ def get_area_names(db: Session):
         records = (
             db.query(models.Area)
             .options(load_only("code", "name", "name_welsh"))
+            .filter(models.Area.name != None)
             .all()
         )
         for area in records:
@@ -39,6 +40,19 @@ def get_postcode(
     db: Session, postcode: str, fields: List[str] = None
 ) -> schemas.Postcode:
     postcode = models.Postcode.parse_id(postcode)
+    if fields:
+        fields = set(fields)
+        name_fields = [
+            f for f in fields
+            if f.endswith("_name")
+        ]
+        fields.update([f.replace("_name", "") for f in name_fields])
+        fields.add("pcds")
+    else:
+        name_fields = [
+            f.name for f in dataclasses.fields(schemas.Postcode)
+            if f.name.endswith("_name")
+        ]
     record = (
         db.query(models.Postcode)
         .options(load_only(*get_fields(models.Postcode, fields)))
@@ -47,8 +61,12 @@ def get_postcode(
     )
     if not record:
         return None
-    area_names = get_area_names(db)
+    name_lookup = get_area_names(db)
     record = record_to_schema(record, schemas.Postcode)
+    for f in name_fields:
+        name = name_lookup.get(getattr(record, f.replace("_name", "")))
+        if name:
+            setattr(record, f, name[0])
 
     return record
 
