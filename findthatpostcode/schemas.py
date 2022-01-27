@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Optional
+from typing import Optional, List
 
 import strawberry
 from pydantic import BaseModel, Field
@@ -70,5 +70,34 @@ class Point:
 @strawberry.type
 @dataclass
 class NearestPoint(Postcode, Point):
+    class Config:
+        orm_mode = True
+
+
+@strawberry.type
+@dataclass
+class Area:
+    code: str
+    name: str
+    name_welsh: Optional[str] = None
+    areachect: Optional[float] = None
+    areaehect: Optional[float] = None
+    areaihect: Optional[float] = None
+    arealhect: Optional[float] = None
+    child_count: Optional[int] = None
+    # child_counts: JSON = None
+    date_end: Optional[date] = None
+    date_start: Optional[date] = None
+    entity: Optional[str] = None
+    # equivalents: JSON() = None
+    owner: Optional[str] = None
+    parent: Optional[str] = None
+    predecessor: Optional[List[str]] = None
+    successor: Optional[List[str]] = None
+    sort_order: Optional[str] = None
+    statutory_instrument_id: Optional[str] = None
+    statutory_instrument_title: Optional[str] = None
+    has_boundary: Optional[bool] = None
+
     class Config:
         orm_mode = True

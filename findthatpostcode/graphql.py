@@ -54,6 +54,12 @@ class Query:
             )
             return postcode_items
 
+    @strawberry.field
+    def get_area(self, areacode: str, info: Info) -> Optional[schemas.Area]:
+        db = get_db()
+        for conn in db:
+            return crud.get_area(conn, areacode, fields=get_selected_fields(info))
+
 
 schema = strawberry.Schema(Query)
 

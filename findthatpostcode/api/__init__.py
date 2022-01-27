@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from findthatpostcode import crud
 from findthatpostcode.database import get_db
-from findthatpostcode.schemas import HTTPNotFoundError, NearestPoint, Postcode
+from findthatpostcode.schemas import HTTPNotFoundError, NearestPoint, Postcode, Area
 
 router = APIRouter(
     prefix="/api/v1",
@@ -66,3 +66,19 @@ async def find_nearest_point(lat: float, long: float, db: Session = Depends(get_
             detail="No postcode found".format(),
         )
     return postcode_item
+
+
+@router.get(
+    "/areas/{areacode}.json",
+    response_model=Area,
+    tags=["Areas"],
+    description="Get data about an area",
+)
+async def get_area(areacode: str, db: Session = Depends(get_db)):
+    area = crud.get_area(db, areacode)
+    if not area:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No area found for {}".format(areacode),
+        )
+    return area

@@ -3,7 +3,7 @@ from typing import List
 
 from geoalchemy2.comparator import Comparator
 from sqlalchemy import func
-from sqlalchemy.orm import Session, load_only
+from sqlalchemy.orm import Session, load_only, defer
 
 from findthatpostcode import models, schemas
 
@@ -20,6 +20,19 @@ def record_to_schema(record, schema, **kwargs):
     return schema(
         **kwargs, **{k: v for k, v in record.__dict__.items() if k in schema_keys}
     )
+    
+
+area_names = {}
+def get_area_names(db: Session):
+    if not area_names:
+        records = (
+            db.query(models.Area)
+            .options(load_only("code", "name", "name_welsh"))
+            .all()
+        )
+        for area in records:
+            area_names[area.code] = (area.name, area.name_welsh)
+    return area_names
 
 
 def get_postcode(
@@ -34,7 +47,10 @@ def get_postcode(
     )
     if not record:
         return None
-    return record_to_schema(record, schemas.Postcode)
+    area_names = get_area_names(db)
+    record = record_to_schema(record, schemas.Postcode)
+
+    return record
 
 
 def get_postcodes(
@@ -92,3 +108,15 @@ def get_postcode_by_hash(
         )
         for result in results:
             yield record_to_schema(result, schemas.Postcode)
+
+
+def get_area(db: Session, areacode: str, fields: List[str] = None) -> schemas.Area:
+    record = (
+        db.query(models.Area)
+        .options(load_only(*get_fields(models.Area, fields)))
+        .filter(models.Area.code == areacode)
+        .first()
+    )
+    if not record:
+        return None
+    return record_to_schema(record, schemas.Area, has_boundary=record.has_boundary)

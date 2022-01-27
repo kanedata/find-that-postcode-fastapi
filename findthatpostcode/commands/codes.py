@@ -153,7 +153,7 @@ def chd(url: str = CHD_URL, use_cache: bool = True, encoding: str = DEFAULT_ENCO
             for k, area in progress:
                 areas[area["GEOGCD"]] = {
                     "code": area["GEOGCD"],
-                    "name": area["GEOGNM"],
+                    "name": area["GEOGNM"] or None,
                     "name_welsh": area["GEOGNMW"] if area["GEOGNMW"] else None,
                     "statutory_instrument_id": area["SI_ID"] if area["SI_ID"] else None,
                     "statutory_instrument_title": area["SI_TITLE"]
