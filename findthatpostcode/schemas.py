@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Optional, List
+from typing import List, Optional
 
 import strawberry
 from pydantic import BaseModel, Field
@@ -65,7 +65,9 @@ class Postcode:
     lep1: Optional[str] = Field(None, title="Local Enterprise Partnership (GSS Code)")
     lep1_name: Optional[str] = Field(None, title="Local Enterprise Partnership (Name)")
     lep2: Optional[str] = Field(None, title="Local Enterprise Partnership 2 (GSS Code)")
-    lep2_name: Optional[str] = Field(None, title="Local Enterprise Partnership 2 (Name)")
+    lep2_name: Optional[str] = Field(
+        None, title="Local Enterprise Partnership 2 (Name)"
+    )
     pfa: Optional[str] = None
     imd: Optional[int] = None
     calncv: Optional[str] = None

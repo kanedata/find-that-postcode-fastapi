@@ -56,10 +56,14 @@ idna==3.3
     #   requests
 isort==5.10.1
     # via -r requirements.in
+jinja2==3.0.3
+    # via -r requirements.in
 mako==1.1.6
     # via alembic
 markupsafe==2.0.1
-    # via mako
+    # via
+    #   jinja2
+    #   mako
 mypy-extensions==0.4.3
     # via black
 packaging==21.3

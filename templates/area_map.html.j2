@@ -1,0 +1,22 @@
+{% from '_utils.html.j2' import info_block, display_area, area_loop %}
+
+{% extends "base.html.j2" %}
+
+{% block headscripts %}
+{% include "_leaflet.html.j2" %}
+{% endblock %}
+
+{% block header %}{% endblock %}
+
+{% block sectionstyles %}fl w-100 lh-copy f4{% endblock %}
+
+{% block content %}
+<figure class="ma0 w-100" style="height:650px;" id="postcode-map"></figure>
+{% endblock %}
+
+{% block bodyscripts %}
+<script type="text/javascript">
+  var geojson = {{ url_for('areas.get_area_boundary', areacodes=areacodes)|tojson }};
+</script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/map.js') }}"></script>
+{% endblock %}

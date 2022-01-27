@@ -11,3 +11,4 @@ typer
 requests
 requests-cache
 strawberry-graphql[fastapi]
+jinja2

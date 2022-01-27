@@ -1,0 +1,76 @@
+{% from '_utils.html.j2' import input %}
+
+{% macro frontpageblock(title, subtitle, title_link, div_classes='') %}
+<div class="w-100 ph0 ph3-l pv3 {{div_classes}}">
+  <h2 class="f2-ns f3 header-font ma0 normal">
+    {% if title_link %}
+    <a href="{{ title_link }}" class="near-black link underline-hover">{{ title }}</a>
+    {% else %}
+    {{ title }}
+    {% endif %}
+  </h2>
+  {% if subtitle %}
+  <p class="f3-ns f4 black-70 header-font ma0 normal">
+    {{ subtitle }}
+  </p>
+  {% endif %}
+  {{ caller() }}
+</div>
+{% endmacro %}
+
+
+{% set frontpage = true %}
+{% extends "base.html.j2" %}
+{% block content %}
+<section class="flex flex-wrap w-60-l w-100 center">
+  
+  {# {% call frontpageblock("Search", title_link=url_for('search.search_index'), div_classes='mb6') %}
+  {% include "_search.html.j2" %}
+  {% endcall %} #}
+  
+  
+  {% call frontpageblock("Tools", div_classes='w-50-l') %}
+  <p>
+    {# <a href="{{url_for('addtocsv.addtocsv')}}" class="link blue underline b">Add data to a CSV</a> with a column of postcode data. #}
+    Information includes latitude/longitude and areas.
+  </p>
+  <p>
+    {# <a href="{{url_for('tools.merge_geojson')}}" class="link blue underline b">Combine GeoJSON files</a> into one merged file. #}
+  </p>
+  {% endcall %}
+
+  {% call frontpageblock("Use the API", title_link="#api", div_classes='w-50-l') %}
+  <p>The API provides programmatic access to the postcode data, using the
+  <a href="http://jsonapi.org/" class="link blue underline">JSON api</a> specification.</p><br>
+  <a class="f6 f5-l button-reset fl pa3 no-underline tc bn bg-animate bg-yellow dim near-black pointer br2-ns" href="#api">Use the API</a>
+  {% endcall %}
+
+</section>
+
+<section class="section pa3 bg-light-gray mt4">
+  <h2 class="f2-ns f3 header-font normal ma0">
+    {# <a class="near-black no-underline dim" href="{{ url_for('areatypes.all') }}">Browse by area type</a> #}
+  </h2>
+  {# {% include "_areatypes.html.j2" %} #}
+</section>
+
+{# {% include "_api.html.j2" %} #}
+{% endblock %}
+
+{% block bodyscripts %}
+<script type="text/javascript">
+function get_latlon(){
+  if (!navigator.geolocation){
+    document.getElementById("get_current_latlong").style.visibility='hidden';
+    return;
+  }
+
+  document.getElementById("get_current_latlong").style.visibility='visible';
+
+  navigator.geolocation.getCurrentPosition(function(position) {
+    document.getElementById("q").value = position.coords.latitude + "," + position.coords.longitude;
+    document.getElementById("search_button").click();
+  });
+}
+</script>
+{% endblock %}

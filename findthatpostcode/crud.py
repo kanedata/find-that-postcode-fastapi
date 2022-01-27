@@ -3,7 +3,7 @@ from typing import List
 
 from geoalchemy2.comparator import Comparator
 from sqlalchemy import func
-from sqlalchemy.orm import Session, load_only, defer
+from sqlalchemy.orm import Session, defer, load_only
 
 from findthatpostcode import models, schemas
 
@@ -20,9 +20,11 @@ def record_to_schema(record, schema, **kwargs):
     return schema(
         **kwargs, **{k: v for k, v in record.__dict__.items() if k in schema_keys}
     )
-    
+
 
 area_names = {}
+
+
 def get_area_names(db: Session):
     if not area_names:
         records = (
@@ -42,15 +44,13 @@ def get_postcode(
     postcode = models.Postcode.parse_id(postcode)
     if fields:
         fields = set(fields)
-        name_fields = [
-            f for f in fields
-            if f.endswith("_name")
-        ]
+        name_fields = [f for f in fields if f.endswith("_name")]
         fields.update([f.replace("_name", "") for f in name_fields])
         fields.add("pcds")
     else:
         name_fields = [
-            f.name for f in dataclasses.fields(schemas.Postcode)
+            f.name
+            for f in dataclasses.fields(schemas.Postcode)
             if f.name.endswith("_name")
         ]
     record = (

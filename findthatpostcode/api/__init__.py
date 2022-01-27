@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from findthatpostcode import crud
 from findthatpostcode.database import get_db
-from findthatpostcode.schemas import HTTPNotFoundError, NearestPoint, Postcode, Area
+from findthatpostcode.schemas import Area, HTTPNotFoundError, NearestPoint, Postcode
 
 router = APIRouter(
     prefix="/api/v1",
