@@ -1,0 +1,12 @@
+fastapi
+black
+isort
+uvicorn[standard]
+alembic
+sqlalchemy
+python-dotenv
+geoalchemy2
+psycopg2-binary
+typer
+requests
+requests-cache
