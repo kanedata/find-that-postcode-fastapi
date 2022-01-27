@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+
 from findthatpostcode import api, graphql
 
 app = FastAPI()

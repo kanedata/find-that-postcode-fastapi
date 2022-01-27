@@ -1,43 +1,37 @@
-from typing import Optional, List
+from typing import List, Optional
+
 import strawberry
 from strawberry.fastapi import GraphQLRouter
 
-from findthatpostcode.schemas import Postcode
-from findthatpostcode import models
+from findthatpostcode import crud, schemas
 from findthatpostcode.database import get_db
+
 
 @strawberry.type
 class Query:
-
     @strawberry.field
-    def get_postcode(self, postcode: str) -> Optional[Postcode]:
-        
+    def get_postcode(self, postcode: str) -> Optional[schemas.Postcode]:
+
         db = get_db()
         for conn in db:
-            postcode_item = (
-                conn.query(models.Postcode)
-                .filter(models.Postcode.pcds == models.Postcode.parse_id(postcode))
-                .first()
-            )
-            if not postcode_item:
-                return None
-            return postcode_item
+            return crud.get_postcode(conn, postcode)
 
     @strawberry.field
-    def get_postcodes(self, postcodes: List[str]) -> Optional[List[Postcode]]:
+    def get_postcodes(self, postcodes: List[str]) -> Optional[List[schemas.Postcode]]:
 
-        postcodes = [models.Postcode.parse_id(postcode) for postcode in postcodes]
-        
         db = get_db()
         for conn in db:
-            postcode_items = (
-                conn.query(models.Postcode)
-                .filter(models.Postcode.pcds.in_(postcodes))
-                .all()
-            )
-            if not postcode_items:
-                return None
-            return postcode_items
+            return crud.get_postcodes(conn, postcodes)
+
+    @strawberry.field
+    def get_nearest_point(
+        self, lat: float, long: float
+    ) -> Optional[schemas.NearestPoint]:
+
+        db = get_db()
+        for conn in db:
+            return crud.get_nearest_postcode(conn, lat, long)
+
 
 schema = strawberry.Schema(Query)
 

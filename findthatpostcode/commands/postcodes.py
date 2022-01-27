@@ -12,8 +12,8 @@ import requests_cache
 from sqlalchemy.dialects import postgresql
 
 from findthatpostcode.commands.import_app import app
-from findthatpostcode.models import Postcode
 from findthatpostcode.database import get_db
+from findthatpostcode.models import Postcode
 from findthatpostcode.settings import NSPL_URL
 
 

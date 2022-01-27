@@ -1,8 +1,9 @@
 from datetime import date
 from typing import Optional
 
-from pydantic import BaseModel, Field
 import strawberry
+from pydantic import BaseModel, Field
+from pydantic.dataclasses import dataclass
 
 
 class HTTPNotFoundError(BaseModel):
@@ -10,7 +11,8 @@ class HTTPNotFoundError(BaseModel):
 
 
 @strawberry.type
-class Postcode(BaseModel):
+@dataclass
+class Postcode:
     pcd: str
     bua11: Optional[str] = None
     buasd11: Optional[str] = None
@@ -27,5 +29,18 @@ class Postcode(BaseModel):
     lep1: Optional[str] = None
     lep2: Optional[str] = None
 
+    class Config:
+        orm_mode = True
+
+
+@dataclass
+class Point:
+    point_lat: float
+    point_long: float
+
+
+@strawberry.type
+@dataclass
+class NearestPoint(Postcode, Point):
     class Config:
         orm_mode = True
