@@ -10,3 +10,4 @@ psycopg2-binary
 typer
 requests
 requests-cache
+strawberry-graphql[fastapi]
