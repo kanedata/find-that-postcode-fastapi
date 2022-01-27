@@ -33,8 +33,8 @@ async def read_postcode(postcode: str, db: Session = Depends(get_db)):
     return postcode_item
 
 
-@router.get("/hash/{hash}", tags=["Postcode hash"])
-@router.get("/hash/{hash}.json", tags=["Postcode hash"])
+@router.get("/hash/{hash}", tags=["Postcode hash"], include_in_schema=False)
+@router.get("/hash/{hash}.json", tags=["Postcode hash"], include_in_schema=False)
 async def single_hash(
     hash: str, fields: list[str] = Query([]), db: Session = Depends(get_db)
 ):
@@ -42,7 +42,7 @@ async def single_hash(
     return {"data": list(postcode_items)}
 
 
-@router.get("/hashes.json", tags=["Postcode hash"])
+@router.get("/hashes.json", tags=["Postcode hash"], include_in_schema=False)
 async def multiple_hash(
     hashes: list[str] = Query([]),
     fields: list[str] = Query([]),
