@@ -145,9 +145,9 @@ function get_results(hashes, fields_to_add) {
                 document.getElementById("progress-bar-inner").style.width = percent_done;
                 return Object.fromEntries(
                     data.data.map(i => [
-                        i["id"], 
+                        i["pcds"], 
                         Object.fromEntries(
-                            Object.entries(i).filter(v => v[0]!="id")
+                            Object.entries(i).filter(v => v[0] !="pcds")
                         )
                     ])
                 );

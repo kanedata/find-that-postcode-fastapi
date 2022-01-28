@@ -62,6 +62,7 @@ class Postcode(UpdatingTable, Base):
     calncv = Column(String(9))
     stp = Column(String(9))
     hash = Column(String(32), index=True)
+    hash4 = Column(String(4), index=True)
     geom = Column(Geometry("POINT", srid=4326))
 
     @staticmethod

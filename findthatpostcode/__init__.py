@@ -78,3 +78,8 @@ app.include_router(graphql.router, prefix="/graphql", include_in_schema=False)
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def index(request: Request):
     return templates.TemplateResponse("index.html.j2", {"request": request})
+
+
+@app.get("/addtocsv/", response_class=HTMLResponse, include_in_schema=False)
+def addtocsv(request: Request):
+    return templates.TemplateResponse("addtocsv.html.j2", {"request": request})

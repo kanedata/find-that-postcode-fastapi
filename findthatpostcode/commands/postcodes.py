@@ -83,6 +83,7 @@ def nspl(url: str = NSPL_URL, use_cache: bool = True):
                     i["hash"] = hashlib.md5(
                         i["pcds"].lower().replace(" ", "").encode()
                     ).hexdigest()
+                    i["hash4"] = i["hash"][:4]
 
                     # add the active and updated fields
                     i["active"] = True

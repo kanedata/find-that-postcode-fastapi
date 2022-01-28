@@ -128,9 +128,9 @@
             <tr>
               <td class="ph2">
                 {{ area_types.get(area, {}).name }}
-                {% if result.get(area) %}
+                {# {% if result.get(area) %}
                 <small> [{{ "{:,.0f}".format(result.get(area)) }}]</small>
-                {% endif %}
+                {% endif %} #}
               </td>
               <td class="ph2 tc"><input type="checkbox" name="fields" value="{{area}}"
                 {% if area in default_fields %}
@@ -187,7 +187,7 @@
 
 {% block bodyscripts %}
 <script>
-var hash_url = {{ url_for('postcodes.multi_hash', _external=true)|tojson }};
+var hash_url = {{ url_for('multiple_hash')|tojson }};
 </script>
-<script src="{{ url_for('static', filename='js/csv.js') }}"></script>
+<script src="{{ url_for('static', path='js/csv.js') }}"></script>
 {% endblock %}

@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Form
 from sqlalchemy.orm import Session
 
 from findthatpostcode import crud
@@ -42,13 +42,13 @@ async def single_hash(
     return {"data": list(postcode_items)}
 
 
-@router.get("/hashes.json", tags=["Postcode hash"], include_in_schema=False)
+@router.post("/hashes.json", tags=["Postcode hash"], include_in_schema=False, name="multiple_hash")
 async def multiple_hash(
-    hashes: list[str] = Query([]),
-    fields: list[str] = Query([]),
+    hash: list[str] = Form([]),
+    properties: list[str] = Form([]),
     db: Session = Depends(get_db),
 ):
-    postcode_items = crud.get_postcode_by_hash(db, hashes, fields=fields)
+    postcode_items = crud.get_postcode_by_hash(db, hash, fields=properties)
     return {"data": list(postcode_items)}
 
 
