@@ -5,7 +5,26 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
+def get_es_url(default):
+    potential_env_vars = ["ELASTICSEARCH_URL", "ES_URL", "BONSAI_URL"]
+    for e_v in potential_env_vars:
+        if os.environ.get(e_v):
+            return os.environ.get(e_v)
+    return default
+
+
+DEBUG = os.environ.get("DEBUG", "false").lower().strip()[0] == "t"
 DATABASE_URL = os.environ.get("DATABASE_URL")
+ES_URL = get_es_url("http://localhost:9200")
+ES_INDEX_PREFIX = os.environ.get("ES_INDEX_PREFIX", "geo")
+ES_INDICES = {
+    "area": str(ES_INDEX_PREFIX) + "_area",
+    "areatype": str(ES_INDEX_PREFIX) + "_entity",
+    "postcode": str(ES_INDEX_PREFIX) + "_postcode",
+    "placename": str(ES_INDEX_PREFIX) + "_placename",
+    "uprn": str(ES_INDEX_PREFIX) + "_uprn",
+}
 DEFAULT_ENCODING = "latin1"
 
 # postcode data URLs
@@ -16,6 +35,14 @@ ONSPD_URL = "https://www.arcgis.com/sharing/rest/content/items/a644dd04d18f4592b
 RGC_URL = "https://www.arcgis.com/sharing/rest/content/items/7216e9b54a1b49459aaaf59b3f122abc/data"
 CHD_URL = "https://www.arcgis.com/sharing/rest/content/items/e2b210c49bd440b89667294ffbe61fa8/data"
 MSOA_URL = "https://houseofcommonslibrary.github.io/msoanames/MSOA-Names-Latest.csv"
+
+# placenames data URLs
+PLACENAMES_URL = "https://www.arcgis.com/sharing/rest/content/items/e8e725daf8944af6a336a9d183114697/data"
+
+# Stats Urls
+IMD2019_URL = "https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/845345/File_7_-_All_IoD2019_Scores__Ranks__Deciles_and_Population_Denominators_3.csv"
+IMD2015_URL = "https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/467774/File_7_ID_2015_All_ranks__deciles_and_scores_for_the_Indices_of_Deprivation__and_population_denominators.csv"
+
 
 with open(
     os.path.join(os.path.dirname(os.path.realpath(__file__)), "areatypes.json")

@@ -7,8 +7,11 @@ sqlalchemy
 python-dotenv
 geoalchemy2
 psycopg2-binary
-typer
 requests
 requests-cache
 strawberry-graphql[fastapi]
 jinja2
+click
+elasticsearch-dsl
+tqdm
+shapely

@@ -6,6 +6,8 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session, defer, load_only
 
 from findthatpostcode import models, schemas
+from findthatpostcode.db import get_db
+from findthatpostcode.documents import Postcode
 
 
 area_names = {}
@@ -18,7 +20,9 @@ def get_fields(model, fields: List[str] = None) -> List[str]:
     return [field for field in fields if field in all_fields]
 
 
-def postcode_get_fields(fields: Optional[List[str]] = None) -> Tuple[List[str], List[str]]:
+def postcode_get_fields(
+    fields: Optional[List[str]] = None,
+) -> Tuple[List[str], List[str]]:
     if fields:
         fields = set(fields)
         name_fields = [f for f in fields if f.endswith("_name")]
@@ -62,7 +66,9 @@ def get_area_names(db: Session):
 def get_postcode(
     db: Session, postcode: str, fields: List[str] = None
 ) -> schemas.Postcode:
-    postcode = models.Postcode.parse_id(postcode)
+    es = get_db()
+    postcode = Postcode.parse_id(postcode)
+    return Postcode.get(id=postcode, using=es)
     fields, name_fields = postcode_get_fields(fields)
     record = (
         db.query(models.Postcode)
@@ -91,7 +97,10 @@ def get_postcodes(
     if not records:
         return None
     name_lookup = get_area_names(db)
-    return [record_to_schema(record, schemas.Postcode, name_fields, name_lookup) for record in records]
+    return [
+        record_to_schema(record, schemas.Postcode, name_fields, name_lookup)
+        for record in records
+    ]
 
 
 def get_nearest_postcode(
@@ -116,7 +125,12 @@ def get_nearest_postcode(
         return None
     name_lookup = get_area_names(db)
     return record_to_schema(
-        record, schemas.NearestPoint, name_fields, name_lookup, point_lat=lat, point_long=long
+        record,
+        schemas.NearestPoint,
+        name_fields,
+        name_lookup,
+        point_lat=lat,
+        point_long=long,
     )
 
 

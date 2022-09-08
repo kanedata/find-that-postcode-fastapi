@@ -2,99 +2,61 @@
 Import commands for the register of geographic codes and code history database
 """
 import csv
-import datetime
-import hashlib
 import io
 import zipfile
 
+import click
 import requests
 import requests_cache
+from tqdm import tqdm
 
-from findthatpostcode.commands.import_app import app
-from findthatpostcode.database import get_db, upsert_statement
-from findthatpostcode.models import Postcode
-from findthatpostcode.settings import NSPL_URL
+from findthatpostcode import settings, db
+from findthatpostcode.documents import Postcode
+from findthatpostcode.utils import BulkImporter
+
+PC_INDEX = Postcode.Index.name
 
 
-@app.command()
-def nspl(url: str = NSPL_URL, use_cache: bool = True):
-    """
-    Import the National Statistical Postcode Lookup (NSPL)
-    """
+@click.command("nspl")
+@click.option("--es-index", default=PC_INDEX)
+@click.option("--url", default=settings.NSPL_URL)
+@click.option("--file", default=None)
+def import_nspl(url=settings.NSPL_URL, es_index=PC_INDEX, file=None):
 
-    if use_cache:
-        session = requests_cache.CachedSession("demo_cache")
+    if settings.DEBUG:
+        requests_cache.install_cache()
+
+    # set up the elasticsearch client and index
+    es = db.get_db()
+    Postcode.init(using=es)
+
+    if file:
+        z = zipfile.ZipFile(file)
     else:
-        session = requests.Session()
+        r = requests.get(url, stream=True)
+        z = zipfile.ZipFile(io.BytesIO(r.content))
 
-    r = session.get(url, stream=True)
-    z = zipfile.ZipFile(io.BytesIO(r.content))
-    postcodes = []
+    for f in z.filelist:
+        if not f.filename.endswith(".csv") or not f.filename.startswith(
+            "Data/multi_csv/NSPL"
+        ):
+            continue
 
-    db = get_db()
+        print(f"[postcodes] Opening {f.filename}")
 
-    for conn in db:
-        for f in z.filelist:
-            if not f.filename.endswith(".csv") or not f.filename.startswith(
-                "Data/multi_csv/NSPL_"
-            ):
-                continue
+        with z.open(f, "r") as pccsv, BulkImporter(es, name="postcodes") as importer:
+            pccsv = io.TextIOWrapper(pccsv)
+            reader = csv.DictReader(pccsv)
+            for record in tqdm(reader):
+                importer.add(
+                    {
+                        "_index": es_index,
+                        "_op_type": "update",
+                        "_id": record["pcds"],
+                        "doc_as_upsert": True,
+                        "doc": Postcode.from_csv(record).to_dict(),
+                    }
+                )
 
-            print("[postcodes] Opening %s" % f.filename)
-
-            pcount = 0
-            with z.open(f, "r") as pccsv:
-                pccsv = io.TextIOWrapper(pccsv)
-                reader = csv.DictReader(pccsv)
-                now = datetime.datetime.now()
-                for i in reader:
-
-                    # null any blank fields (or ones with a dummy code in)
-                    for k in i:
-                        if i[k] == "" or i[k] in [
-                            "E99999999",
-                            "S99999999",
-                            "W99999999",
-                            "N99999999",
-                        ]:
-                            i[k] = None
-
-                    # date fields
-                    for j in ["dointr", "doterm"]:
-                        if i[j]:
-                            i[j] = datetime.datetime.strptime(i[j], "%Y%m")
-
-                    # latitude and longitude
-                    for j in ["lat", "long"]:
-                        if i[j]:
-                            i[j] = float(i[j])
-                            if i[j] == 99.999999:
-                                i[j] = None
-                    i["geom"] = None
-                    if i["lat"] and i["long"]:
-                        i["geom"] = f"POINT({i['long']} {i['lat']})"
-
-                    # integer fields
-                    for j in ["oseast1m", "osnrth1m", "usertype", "osgrdind", "imd"]:
-                        if i[j]:
-                            i[j] = int(i[j])
-
-                    # add postcode hash
-                    i["hash"] = hashlib.md5(
-                        i["pcds"].lower().replace(" ", "").encode()
-                    ).hexdigest()
-                    i["hash4"] = i["hash"][:4]
-
-                    # add the active and updated fields
-                    i["active"] = True
-                    i["updated"] = now
-
-                    postcodes.append(i)
-                    pcount += 1
-
-                # save the postcodes
-                upsert_stmt = upsert_statement(Postcode, [Postcode.pcd])
-                conn.execute(upsert_stmt, postcodes)
-                postcodes = []
-        conn.commit()
-        conn.close()
+                if settings.DEBUG and (len(importer) >= 100):
+                    break

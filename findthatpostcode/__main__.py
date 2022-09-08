@@ -1,4 +1,4 @@
-from findthatpostcode.commands import app
+from findthatpostcode.commands import cli
 
 if __name__ == "__main__":
-    app()
+    cli()
