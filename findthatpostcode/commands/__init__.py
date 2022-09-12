@@ -1,7 +1,8 @@
 import click
 
-from . import postcodes, codes, boundaries, placenames, stats
 from findthatpostcode.db import init_db
+
+from . import boundaries, codes, placenames, postcodes, stats
 
 
 @click.command("init-db")

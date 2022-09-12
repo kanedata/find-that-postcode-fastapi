@@ -1,6 +1,6 @@
 import os
-from findthatpostcode.settings import RGC_URL, CHD_URL, MSOA_URL, NSPL_URL
 
+from findthatpostcode.settings import CHD_URL, MSOA_URL, NSPL_URL, RGC_URL
 
 MOCK_FILES = {
     CHD_URL: os.path.join(

@@ -8,8 +8,8 @@ import requests_cache
 import shapely.geometry
 import tqdm
 
-from findthatpostcode import settings, db
-from findthatpostcode.documents import Entity, Area
+from findthatpostcode import db, settings
+from findthatpostcode.documents import Area, Entity
 from findthatpostcode.utils import BulkImporter
 
 AREA_INDEX = Area.Index.name

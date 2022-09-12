@@ -2,11 +2,10 @@ import logging
 from typing import List
 
 from elasticsearch import Elasticsearch
-from fastapi import APIRouter, Depends, HTTPException, Query, status, Form
+from fastapi import APIRouter, Depends, Form, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from findthatpostcode import crud
-
 from findthatpostcode.db import get_db
 from findthatpostcode.schemas import Area, HTTPNotFoundError, NearestPoint, Postcode
 

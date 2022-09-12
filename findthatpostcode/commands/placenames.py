@@ -1,18 +1,18 @@
 """
 Import commands for placenames
 """
-from collections import defaultdict
 import csv
 import io
 import zipfile
+from collections import defaultdict
 
 import click
 import requests
 import requests_cache
 
-from findthatpostcode import settings, db
-from findthatpostcode.utils import BulkImporter
+from findthatpostcode import db, settings
 from findthatpostcode.documents import Placename
+from findthatpostcode.utils import BulkImporter
 
 PLACENAMES_INDEX = Placename.Index.name
 

@@ -1,13 +1,13 @@
 from elasticsearch_dsl import (
-    Document,
-    Date,
-    Nested,
     Boolean,
-    analyzer,
-    InnerDoc,
     Completion,
+    Date,
+    Document,
+    InnerDoc,
     Keyword,
+    Nested,
     Text,
+    analyzer,
 )
 
 

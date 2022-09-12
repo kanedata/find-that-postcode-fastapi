@@ -10,9 +10,9 @@ import requests_cache
 import tqdm
 from elasticsearch.helpers import bulk
 
-from findthatpostcode import settings, db
-from findthatpostcode.utils import BulkImporter
+from findthatpostcode import db, settings
 from findthatpostcode.documents import Area
+from findthatpostcode.utils import BulkImporter
 
 AREA_INDEX = Area.Index.name
 

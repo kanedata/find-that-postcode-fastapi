@@ -1,11 +1,10 @@
 import datetime
 import hashlib
-from itertools import takewhile
 import re
-from elasticsearch_dsl import (
-    Document,
-    field,
-)
+from itertools import takewhile
+
+from elasticsearch_dsl import Document, field
+
 from findthatpostcode import settings
 
 

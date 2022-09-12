@@ -10,7 +10,7 @@ import requests
 import requests_cache
 from tqdm import tqdm
 
-from findthatpostcode import settings, db
+from findthatpostcode import db, settings
 from findthatpostcode.documents import Postcode
 from findthatpostcode.utils import BulkImporter
 

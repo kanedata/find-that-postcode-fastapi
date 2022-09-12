@@ -1,4 +1,5 @@
 import datetime
+
 from elasticsearch.helpers import bulk
 
 

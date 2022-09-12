@@ -1,15 +1,14 @@
 import dataclasses
 import logging
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
+
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Q
-
 from geoalchemy2.comparator import Comparator
 
 from findthatpostcode import schemas
 from findthatpostcode.db import get_db
-from findthatpostcode.documents import Postcode, Area, Entity, Placename
-
+from findthatpostcode.documents import Area, Entity, Placename, Postcode
 
 logger = logging.getLogger(__name__)
 

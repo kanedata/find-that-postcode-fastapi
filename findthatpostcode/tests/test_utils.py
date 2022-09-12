@@ -1,13 +1,15 @@
 import datetime
-import findthatpostcode.utils
-from findthatpostcode.utils import (
-    process_date,
-    process_int,
-    process_float,
-    BulkImporter,
-)
-from findthatpostcode.tests.fixtures import mock_bulk
+
 import pytest
+
+import findthatpostcode.utils
+from findthatpostcode.tests.fixtures import mock_bulk
+from findthatpostcode.utils import (
+    BulkImporter,
+    process_date,
+    process_float,
+    process_int,
+)
 
 
 @pytest.mark.parametrize(

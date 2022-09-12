@@ -1,10 +1,12 @@
 import os
+
 import pytest
 from click.testing import CliRunner
-from findthatpostcode.commands.postcodes import import_nspl, db, Postcode
-from findthatpostcode.settings import NSPL_URL
+
 import findthatpostcode.utils
-from findthatpostcode.tests.fixtures import mock_bulk, MockES, MOCK_FILES
+from findthatpostcode.commands.postcodes import Postcode, db, import_nspl
+from findthatpostcode.settings import NSPL_URL
+from findthatpostcode.tests.fixtures import MOCK_FILES, MockES, mock_bulk
 
 
 def test_import_nspl(requests_mock, monkeypatch):

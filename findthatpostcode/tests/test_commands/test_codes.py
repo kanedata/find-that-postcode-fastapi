@@ -1,17 +1,19 @@
 import os
+
 import pytest
 from click.testing import CliRunner
+
+import findthatpostcode.utils
 from findthatpostcode.commands.codes import (
+    Area,
+    Entity,
+    db,
     import_chd,
     import_msoa_names,
     import_rgc,
-    db,
-    Entity,
-    Area,
 )
-from findthatpostcode.settings import RGC_URL, CHD_URL, MSOA_URL
-import findthatpostcode.utils
-from findthatpostcode.tests.fixtures import mock_bulk, MockES, MOCK_FILES
+from findthatpostcode.settings import CHD_URL, MSOA_URL, RGC_URL
+from findthatpostcode.tests.fixtures import MOCK_FILES, MockES, mock_bulk
 
 
 @pytest.fixture

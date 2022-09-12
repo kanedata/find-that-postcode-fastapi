@@ -1,5 +1,6 @@
-from findthatpostcode.documents import Postcode
 import pytest
+
+from findthatpostcode.documents import Postcode
 
 
 @pytest.mark.parametrize(

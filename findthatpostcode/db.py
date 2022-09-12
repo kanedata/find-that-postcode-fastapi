@@ -1,7 +1,8 @@
 import click
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Document, Index
-from findthatpostcode import settings, documents
+
+from findthatpostcode import documents, settings
 
 
 def get_db():

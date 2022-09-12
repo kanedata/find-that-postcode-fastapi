@@ -13,13 +13,9 @@ import requests
 import requests_cache
 import tqdm
 
-from findthatpostcode import settings, db
-from findthatpostcode.documents import Entity, Area
-from findthatpostcode.utils import (
-    BulkImporter,
-    process_date,
-    process_float,
-)
+from findthatpostcode import db, settings
+from findthatpostcode.documents import Area, Entity
+from findthatpostcode.utils import BulkImporter, process_date, process_float
 
 ENTITY_INDEX = Entity.Index.name
 AREA_INDEX = Area.Index.name
