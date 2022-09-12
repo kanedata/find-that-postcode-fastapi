@@ -5,16 +5,16 @@ from findthatpostcode.settings import CHD_URL, MSOA_URL, NSPL_URL, RGC_URL
 MOCK_FILES = {
     CHD_URL: os.path.join(
         os.path.dirname(__file__),
-        "Code_History_Database_(Sept_2020)_UK_v2.zip",
+        "chd.zip",
     ),
-    MSOA_URL: os.path.join(os.path.dirname(__file__), "MSOA-Names-Latest.csv"),
+    MSOA_URL: os.path.join(os.path.dirname(__file__), "msoanames.csv"),
     RGC_URL: os.path.join(
         os.path.dirname(__file__),
-        "Register_of_Geographic_Codes_(Sept_2020)_UK.zip",
+        "rgc.zip",
     ),
     NSPL_URL: os.path.join(
         os.path.dirname(__file__),
-        "NSPL21_AUG_2022_UK_test.zip",
+        "nspl21.zip",
     ),
 }
 

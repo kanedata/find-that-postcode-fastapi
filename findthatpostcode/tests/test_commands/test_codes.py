@@ -46,7 +46,4 @@ def test_import_codes(function, args, mock_files):
     runner = CliRunner()
 
     result = runner.invoke(function, args)
-    if result.exit_code == 1:
-        print(result.stdout)
-        raise result.exception
     assert result.exit_code == 0
