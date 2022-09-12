@@ -206,13 +206,12 @@ def import_msoa_names(
     es = db.get_db()
 
     if file:
-        z = open(file, encoding=encoding)
+        file = open(file, encoding=encoding)
     else:
         r = requests.get(url, stream=True)
         file = codecs.iterdecode(r.iter_lines(), encoding=encoding)
 
     reader = csv.DictReader(file)
-    area_updates = []
     with BulkImporter(es, name="msoa names", limit=50000) as importer:
         for k, area in tqdm.tqdm(enumerate(reader)):
             alt_names = [area["msoa11hclnm"]]

@@ -2,14 +2,15 @@
 
 
 
-## Add migration
+## Testing
 
 ```sh
-alembic revision --autogenerate -m "<Description>"
+python -m pytest
 ```
 
-## Run migration
+Using coverage:
 
 ```sh
-alembic upgrade head
+coverage run -m pytest && coverage html
+python -m http.server -d htmlcov 8001
 ```
