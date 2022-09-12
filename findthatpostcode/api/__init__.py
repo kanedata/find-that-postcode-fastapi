@@ -1,11 +1,17 @@
+import logging
 from typing import List
 
+from elasticsearch import Elasticsearch
 from fastapi import APIRouter, Depends, HTTPException, Query, status, Form
 from sqlalchemy.orm import Session
 
 from findthatpostcode import crud
-from findthatpostcode.database import get_db
+
+from findthatpostcode.db import get_db
 from findthatpostcode.schemas import Area, HTTPNotFoundError, NearestPoint, Postcode
+
+logger = logging.getLogger(__name__)
+
 
 router = APIRouter(
     prefix="/api/v1",
@@ -23,7 +29,8 @@ router = APIRouter(
     response_model=Postcode,
     tags=["Get postcode"],
 )
-async def read_postcode(postcode: str, db: Session = Depends(get_db)):
+async def read_postcode(postcode: str, db: Elasticsearch = Depends(get_db)):
+    logger.info(postcode)
     postcode_item = crud.get_postcode(db, postcode)
     if not postcode_item:
         raise HTTPException(
@@ -42,7 +49,12 @@ async def single_hash(
     return {"data": list(postcode_items)}
 
 
-@router.post("/hashes.json", tags=["Postcode hash"], include_in_schema=False, name="multiple_hash")
+@router.post(
+    "/hashes.json",
+    tags=["Postcode hash"],
+    include_in_schema=False,
+    name="multiple_hash",
+)
 async def multiple_hash(
     hash: list[str] = Form([]),
     properties: list[str] = Form([]),

@@ -65,6 +65,9 @@ class Postcode(Document):
     class Index:
         name = settings.ES_INDICES["postcode"]
 
+    def area_codes(self):
+        return [f for f in self.to_dict().values() if isinstance(f, str)]
+
     @classmethod
     def from_csv(cls, record):
         """Create a Postcode object from a NSPL record"""

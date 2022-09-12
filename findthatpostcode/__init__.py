@@ -1,6 +1,5 @@
 import datetime
 
-from elasticsearch_dsl import connections
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles

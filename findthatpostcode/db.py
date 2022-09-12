@@ -4,8 +4,8 @@ from elasticsearch_dsl import Document, Index
 from findthatpostcode import settings, documents
 
 
-def get_db(**kwargs):
-    return Elasticsearch(settings.ES_URL, timeout=120, **kwargs)
+def get_db():
+    return Elasticsearch(settings.ES_URL, timeout=120)
 
 
 def close_db(e=None):
