@@ -1,6 +1,11 @@
 
+## Development
 
+Run a development server
 
+```
+uvicorn findthatpostcode:app --debug --reload
+```
 
 ## Testing
 

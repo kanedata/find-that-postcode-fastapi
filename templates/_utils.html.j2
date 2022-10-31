@@ -1,4 +1,4 @@
-{% macro display_area(area, hide_areatype, div_class='') %}
+{% macro display_area(area, hide_areatype, div_class='', request=none) %}
   {% if area.__class__.__name__ == 'Place' %}
   {% set url_source = 'places.get_place' %}
   {% else %}
@@ -6,17 +6,21 @@
   {% endif %}
 
 <div class="{{div_class}}">
-    <span class='pa1 bg-light-gray code mr1'><a href="{{ url_for(url_source, areacode=area.id, filetype='html') }}" class='near-black code link underline-hover'>{{ area.id }}</a></span>
-    {% if area.found and area.attributes %}
-    <a href="{{ url_for(url_source, areacode=area.id, filetype='html') }}" class='blue link underline-hover dim'>
-      {{- area.attributes.name -}}
-    </a>
+    <span class='pa1 bg-light-gray code mr1'>
+      {# <a href="{{ request.url_for(url_source, areacode=area.id, filetype='html') }}" class='near-black code link underline-hover'> #}
+      {{- area.code -}}
+      {# </a> #}
+    </span>
+    {% if area.name %}
+    {# <a href="{{ url_for(url_source, areacode=area.id, filetype='html') }}" class='blue link underline-hover dim'> #}
+      {{- area.name -}}
+    {# </a> #}
     {% endif %}
-    {% if area.attributes.active == false %}
+    {% if area.active == false %}
     <span class='bg-washed-red red br2 pa1 f6 dib'>INACTIVE</span>
     {% endif %}
-    {% if area.relationships.areatype and not hide_areatype %}
-    {% if area.attributes.name %}
+    {% if area.relationships and area.relationships.areatype and not hide_areatype %}
+    {% if area.name %}
     <a href="{{ url_for('areatypes.get_areatype', areacode=area.relationships.areatype.id, filetype='html') }}" class='gray f6 link underline-hover dim'>
       ({{- area.relationships.areatype.get_name(area.id) -}})
     </a>

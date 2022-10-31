@@ -93,3 +93,19 @@ async def get_area(areacode: str, db: Session = Depends(get_db)):
             detail="No area found for {}".format(areacode),
         )
     return area
+
+
+@router.get(
+    "/areas/search.json",
+    response_model=Area,
+    tags=["Areas"],
+    description="Search areas",
+)
+async def search_areas(areacode: str, db: Session = Depends(get_db)):
+    area = crud.get_area(db, areacode)
+    if not area:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No area found for {}".format(areacode),
+        )
+    return area

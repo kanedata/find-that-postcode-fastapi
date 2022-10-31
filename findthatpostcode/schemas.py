@@ -5,6 +5,9 @@ import strawberry
 from pydantic import BaseModel, Field
 from pydantic.dataclasses import dataclass
 
+from findthatpostcode import settings
+from findthatpostcode.commands.placenames import PLACE_TYPES
+
 
 class HTTPNotFoundError(BaseModel):
     detail: str
@@ -118,3 +121,63 @@ class Area:
 
     class Config:
         orm_mode = True
+
+    def get_areatype(self) -> str:
+        return settings.AREA_TYPES.get(settings.ENTITIES.get(self.entity))
+
+
+@strawberry.type
+@dataclass
+class Placename:
+    place18cd: str
+    place18nm: str
+    splitind: Optional[bool] = None
+    descnm: Optional[str] = None
+    ctyhistnam: Optional[str] = None
+    ctyltnm: Optional[str] = None
+    cty: Optional[str] = None
+    laua: Optional[str] = None
+    ward: Optional[str] = None
+    parish: Optional[str] = None
+    hlth: Optional[str] = None
+    rgd: Optional[str] = None
+    rgn: Optional[str] = None
+    park: Optional[str] = None
+    bua11: Optional[str] = None
+    pcon: Optional[str] = None
+    eer: Optional[str] = None
+    pfa: Optional[str] = None
+    cty: Optional[str] = None
+    laua: Optional[str] = None
+    ward: Optional[str] = None
+    parish: Optional[str] = None
+    hlth: Optional[str] = None
+    rgd: Optional[str] = None
+    rgn: Optional[str] = None
+    park: Optional[str] = None
+    bua11: Optional[str] = None
+    pcon: Optional[str] = None
+    eer: Optional[str] = None
+    pfa: Optional[str] = None
+    gridgb1m: Optional[str] = None
+    gridgb1e: Optional[int] = None
+    gridgb1n: Optional[int] = None
+    grid1km: Optional[str] = None
+    lat: Optional[float] = None
+    long: Optional[float] = None
+    # location: Optional[Point] = None
+    alternative_names: Optional[List[str]] = None
+
+    @property
+    def code(self) -> str:
+        return self.place18cd
+
+    @property
+    def name(self) -> str:
+        return self.place18nm
+
+    def get_areatype(self) -> dict:
+        description = PLACE_TYPES.get(self.descnm)
+        if description:
+            return {"name": "Place - {}".format(description[0])}
+        return {"name": "Place"}

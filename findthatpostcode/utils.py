@@ -1,6 +1,10 @@
 import datetime
+import re
 
 from elasticsearch.helpers import bulk
+
+LATLONG_REGEX = re.compile(r"^(?P<lat>\-?\d+\.[0-9]+),(?P<lon>\-?\d+\.\d+)$")
+POSTCODE_REGEX = re.compile(r"^[A-Z]{1,2}[0-9][0-9A-Z]? ?[0-9][A-Z]{2}$")
 
 
 class BulkImporter:
@@ -63,3 +67,19 @@ def process_float(value):
         return value
     value = value.replace(",", "")
     return float(value)
+
+
+def is_latlon(q):
+    q = q.strip().replace(" ", "")
+    m = LATLONG_REGEX.match(q)
+    if m:
+        return {
+            "lat": m.group("lat"),
+            "lon": m.group("lon"),
+        }
+    return False
+
+
+def is_postcode(q):
+    q = q.strip().replace(" ", "").upper()
+    return bool(POSTCODE_REGEX.match(q))

@@ -24,9 +24,9 @@
 {% block content %}
 <section class="flex flex-wrap w-60-l w-100 center">
   
-  {# {% call frontpageblock("Search", title_link=url_for('search.search_index'), div_classes='mb6') %}
+  {% call frontpageblock("Search", title_link=url_for('search'), div_classes='mb6') %}
   {% include "_search.html.j2" %}
-  {% endcall %} #}
+  {% endcall %}
   
   
   {% call frontpageblock("Tools", div_classes='w-50-l') %}
@@ -51,7 +51,7 @@
   <h2 class="f2-ns f3 header-font normal ma0">
     {# <a class="near-black no-underline dim" href="{{ url_for('areatypes.all') }}">Browse by area type</a> #}
   </h2>
-  {# {% include "_areatypes.html.j2" %} #}
+  {% include "_areatypes.html.j2" %}
 </section>
 
 {# {% include "_api.html.j2" %} #}

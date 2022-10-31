@@ -39,6 +39,7 @@ class Area(Document):
     type = field.Keyword()
     alternative_names = field.Text()
     boundary = field.GeoShape()
+    has_boundary = field.Boolean()
 
     class Index:
         name = settings.ES_INDICES["area"]

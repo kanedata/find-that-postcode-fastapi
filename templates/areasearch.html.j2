@@ -1,45 +1,97 @@
 {% from '_utils.html.j2' import input, display_area %}
 {% from '_pagination.html.j2' import pagination %}
 
-{% set title = "Search" %}
-{% extends "base.html.j2" %}
-{% block content %}
-<section class="flex flex-wrap w-60-l w-100 center">
-  <div class="w-100 ph0 ph3-l pv3">
-    {% include "_search.html.j2" %}
-  </div>
-
 {% if q %}
-  <div class="columns">
-  {% if result %}
-    {% if result|length >= total %}
-    <h2 class="header-font mb0 mt4 pa0 f4">Showing all {{ "{:,.0f}".format(total) }} results for "{{ q }}"</h2>
-    {% else %}
-    <h2 class="header-font mb0 mt4 pa0 f4">Showing {{ "{:,.0f}".format(nav.start_item) }} to {{ "{:,.0f}".format(nav.end_item) }} of {{ "{:,.0f}".format(total) }} results for "{{ q }}"</h2>
-    {% endif %}
-    <ul class="">
-      {% for i, score in result %}
-        <li class="pa0 mv3">
-          {{ display_area(i, hide_areatype=true, div_class="di") }}
-          <span class="gray">
-          {% if i.relationships.areatype %} - 
-            {% if i.attributes.active==false %}
-            <span class="red b">Inactive</span>
-            {% endif %}
-            {{ i.relationships.areatype.get_name(i.id) }}
-          {% elif i.__class__.__name__=='Place' %} - {{i.attributes.type|default('Place', true) }}{% endif %}
-          </span>
-        </li>
-      {% endfor %}
-    </ul>
-    <div class="f5 mt4">
-    {{ pagination(nav) }}
-    </div>
-    {% else %}
-    <h2 class="header-font mb0 mt4 pa0 f4">No results found</h2>
-    {% endif %}
-  </div>
+{% set title = "Search results" %}
+{% set subtitle = "{:,.0f} results".format(total) %}
+{% else %}
+{% set title = "Search" %}
 {% endif %}
+{% extends "base.html.j2" %}
 
-</section>
+{% block headscripts %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js@9.0.1/public/assets/styles/choices.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/choices.js@9.0.1/public/assets/scripts/choices.min.js"></script>
+<style>
+.flex-grow {
+    flex-grow: 1;
+}
+</style>
+{{ super() }}
+{% endblock %}
+
+{% block bodyscripts %}
+{{ super() }}
+<script src='{{ url_for("static", path="js/choices.js") }}' type="text/javascript"></script>
+{% endblock bodyscripts %}
+
+{% block content %}
+
+<form class="">
+  <div class="fl w-100 w-70-l pa2">
+    <div class="cf mv3 flex-l">
+      <div class="ba br1 b--gray inline-flex flex-grow">
+        <input name="q" id="search-autocomplete-q" class="h-100 input-reset bn pa3 near-black bg-white flex-grow header-font"
+          type="text" placeholder="Search for a name or number" value="{{ q or '' }}" autocomplete="off">
+      </div>
+      <input type="submit" value="Search"
+        class="f5 f4-l button-reset header-font fl pv3 ph4 tc bg-animate bg-yellow dim near-black pointer br2-ns br--right-ns  bw2 b--near-black ba">
+    </div>
+
+    <div class="mt4">
+      {% if result %}
+      <article class="message is-success pa2 bg-washed-green mb4">
+        <div class="message-body">
+          {{ "{:,.0f}".format(total) }} results found for "{{ q }}"
+          Showing results 1 to 25.
+        </div>
+      </article>
+
+      {% for area, score in result %}
+      <div class="content measure-wide mb4">
+        <h3 class="title pa0 mb1 mt0 mh0">
+          <a href="{{ '' }}" class="dark-blue link underline-hover tracked-tight lh-copy normal">{{ area.name }}</a>
+        </h3>
+        <h4 class="subtitle mt0 mb2 pa0 f4 mid-gray normal">
+          <a class="link mid-gray underline-hover" href="{{ '' }}">
+              {{ area.get_areatype().name }}</a>
+        </h4>
+        <div class="cf mb2">
+          <span class="dib nowrap bg-dark-blue f4 pv1 ph2 br2">
+            <a href="{{ area.code }}" class="link  white code underline-hover normal nowrap">{{ area.code }}</a>
+          </span>
+        </div>
+      </div>
+      {% endfor %}
+
+      {% else %}
+      <article class="message is-error pa2 bg-washed-red mb4">
+        <div class="message-body">
+          No results found for "{{ q }}"
+        </div>
+      </article>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <div class="fl w-100 w-30-l pa2">
+    <h4 class="ma0 pa0">Area types</h4>
+
+    <select class="js-choices w-100" style="max-width: 100%" multiple name="areatype">
+      <option value="">Area type</option>
+      {% for label, group in key_area_types %}
+      <optgroup label="{{label}} area types">
+        {% for areatype_code in group if area_types[areatype_code] %}
+        <option value="{{ areatype_code }}" {% if areatype_code in areatype_ids %}selected{% endif %}>{{ area_types[areatype_code].name }}</option>
+        {% endfor %}
+      </optgroup>
+      {% endfor %}
+    </select>
+
+    <input type="submit" value="Filter organisations"
+      class="f5 f4-l button-reset header-font pv3 ph4 tc bg-animate bg-yellow dim near-black pointer bw2 b--near-black ba" />
+    <a href="" class="f6 link blue underline">Clear filters</a>
+  </div>
+</form>
 {% endblock %}

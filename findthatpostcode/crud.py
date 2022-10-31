@@ -156,13 +156,100 @@ def get_postcode_by_hash(
 def get_area(
     db: Elasticsearch, areacode: str, fields: List[str] = None
 ) -> schemas.Area:
-    return None
-    record = (
-        db.query(models.Area)
-        .options(load_only(*get_fields(models.Area, fields)))
-        .filter(models.Area.code == areacode)
-        .first()
+    record = Area.get(
+        id=areacode, using=db, _source_includes=fields, _source_excludes=["boundary"]
     )
     if not record:
         return None
     return record_to_schema(record, schemas.Area, has_boundary=record.has_boundary)
+
+
+def search_areas(db: Elasticsearch, q: str, pagination=None) -> List[schemas.Area]:
+    """
+    Search for areas based on a name
+    """
+    query = {
+        "query": {
+            "function_score": {
+                "query": {"query_string": {"query": q}},
+                "boost": "5",
+                "functions": [
+                    {"weight": 0.1, "filter": {"term": {"active": False}}},
+                    {"weight": 6, "filter": {"exists": {"field": "type"}}},
+                    {
+                        "weight": 3,
+                        "filter": {
+                            "terms": {
+                                "type": ["ctry", "region", "cty", "laua", "rgn", "LOC"]
+                            }
+                        },
+                    },
+                    {
+                        "weight": 2,
+                        "filter": {
+                            "terms": {"type": ["ttwa", "pfa", "lep", "park", "pcon"]}
+                        },
+                    },
+                    {
+                        "weight": 1.5,
+                        "filter": {"terms": {"type": ["ccg", "hlthau", "hro", "pct"]}},
+                    },
+                    {
+                        "weight": 1,
+                        "filter": {
+                            "terms": {"type": ["eer", "bua11", "buasd11", "teclec"]}
+                        },
+                    },
+                    {
+                        "weight": 0.4,
+                        "filter": {
+                            "terms": {
+                                "type": [
+                                    "msoa11",
+                                    "lsoa11",
+                                    "wz11",
+                                    "oa11",
+                                    "nuts",
+                                    "ward",
+                                ]
+                            }
+                        },
+                    },
+                ],
+            }
+        }
+    }
+    if pagination:
+        result = db.search(
+            index="geo_area,geo_placename",
+            body=query,
+            from_=pagination.from_,
+            size=pagination.size,
+            _source_excludes=["boundary"],
+            ignore=[404],
+        )
+    else:
+        result = db.search(
+            index="geo_area,geo_placename",
+            body=query,
+            _source_excludes=["boundary"],
+            ignore=[404],
+        )
+    return_result = []
+    for a in result.get("hits", {}).get("hits", []):
+        if a["_index"] == "geo_placename":
+            return_result.append(
+                record_to_schema(Placename(**a["_source"]), schemas.Placename)
+            )
+        else:
+            if a["_source"].get("date_start"):
+                a["_source"]["date_start"] = a["_source"]["date_start"][0:10]
+            return_result.append(record_to_schema(Area(**a["_source"]), schemas.Area))
+    total = result.get("hits", {}).get("total", 0)
+    if isinstance(total, dict):
+        total = total.get("value", 0)
+    return {
+        "result": return_result,
+        "scores": [a["_score"] for a in result.get("hits", {}).get("hits", [])],
+        "result_count": total,
+    }
