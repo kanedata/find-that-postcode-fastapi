@@ -27,6 +27,13 @@ ES_INDICES = {
 }
 DEFAULT_ENCODING = "latin1"
 
+# S3 Storage settings
+S3_REGION = os.environ.get("S3_REGION")
+S3_ENDPOINT = os.environ.get("S3_ENDPOINT")
+S3_ACCESS_ID = os.environ.get("S3_ACCESS_ID")
+S3_SECRET_KEY = os.environ.get("S3_SECRET_KEY")
+S3_BUCKET = os.environ.get("S3_BUCKET", "geo-boundaries")
+
 # postcode data URLs
 NSPL_URL = "https://www.arcgis.com/sharing/rest/content/items/677cfc3ef56541999314efc795664ce9/data"
 ONSPD_URL = "https://www.arcgis.com/sharing/rest/content/items/a644dd04d18f4592b7d36705f93270d8/data"
