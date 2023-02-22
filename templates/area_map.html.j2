@@ -18,5 +18,5 @@
 <script type="text/javascript">
   var geojson = {{ url_for('areas.get_area_boundary', areacodes=areacodes)|tojson }};
 </script>
-<script type="text/javascript" src="{{ url_for('static', filename='js/map.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', path='js/map.js') }}"></script>
 {% endblock %}

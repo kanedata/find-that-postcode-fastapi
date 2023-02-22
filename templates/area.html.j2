@@ -176,6 +176,6 @@
   var parent_geojson = {{ url_for('areas.get_area_boundary', areacodes=result.relationships.parent.id)|tojson }};
   {% endif %}
 </script>
-<script type="text/javascript" src="{{ url_for('static', filename='js/map.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', path='js/map.js') }}"></script>
 {% endif %}
 {% endblock %}
