@@ -12,3 +12,11 @@ def test_read_main():
     assert response.status_code == 200
     assert response.headers["content-type"] == "text/html; charset=utf-8"
     assert "Find that Postcode" in response.text
+    assert "Search" in response.text
+
+
+def test_read_about():
+    response = client.get("/about")
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "text/html; charset=utf-8"
+    assert "About this site" in response.text

@@ -20,3 +20,6 @@ pytest-mock
 requests-mock
 coverage
 boto3
+httpx
+pydantic_geojson
+boto3-stubs[s3]

@@ -1,5 +1,5 @@
 from datetime import date
-from typing import List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 import strawberry
 from pydantic import BaseModel, Field
@@ -177,7 +177,21 @@ class Placename:
         return self.place18nm
 
     def get_areatype(self) -> dict:
-        description = PLACE_TYPES.get(self.descnm)
-        if description:
-            return {"name": "Place - {}".format(description[0])}
+        descnm = self.descnm
+        if descnm:
+            description = PLACE_TYPES.get(descnm)
+            if description:
+                return {"name": "Place - {}".format(description[0])}
         return {"name": "Place"}
+
+
+@dataclass
+class AreaSearchResults:
+    result_count: int
+    result: List[Area | Placename | Postcode]
+    scores: List[float]
+
+
+@dataclass
+class PostcodeHashResults:
+    data: List[Postcode]

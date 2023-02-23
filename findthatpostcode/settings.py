@@ -6,11 +6,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def get_es_url(default):
+def get_es_url(default: str) -> str:
     potential_env_vars = ["ELASTICSEARCH_URL", "ES_URL", "BONSAI_URL"]
     for e_v in potential_env_vars:
-        if os.environ.get(e_v):
-            return os.environ.get(e_v)
+        e_v_value = os.environ.get(e_v)
+        if e_v_value:
+            return e_v_value
     return default
 
 

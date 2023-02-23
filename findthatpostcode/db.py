@@ -2,11 +2,12 @@ import click
 from boto3 import session
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Document, Index
+from mypy_boto3_s3.client import S3Client
 
 from findthatpostcode import documents, settings
 
 
-def get_db():
+def get_db() -> Elasticsearch:
     return Elasticsearch(settings.ES_URL, timeout=120)
 
 
@@ -27,7 +28,7 @@ def init_db(reset=False):
         DocumentIndex.create(using=es)
 
 
-def get_s3_client():
+def get_s3_client() -> S3Client:
     s3_session = session.Session()
     return s3_session.client(
         "s3",

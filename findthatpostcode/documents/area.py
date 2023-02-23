@@ -1,8 +1,3 @@
-import datetime
-import hashlib
-import re
-from itertools import takewhile
-
 from elasticsearch_dsl import Document, InnerDoc, field
 
 from findthatpostcode import settings

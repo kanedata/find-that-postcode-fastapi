@@ -1,13 +1,14 @@
 import datetime
 
-from fastapi import FastAPI, Request, Depends
+from elasticsearch import Elasticsearch
+from fastapi import Depends, FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
+from findthatpostcode import api, crud, graphql, settings
 from findthatpostcode.db import get_db
-from findthatpostcode import api, graphql, settings, crud
 from findthatpostcode.utils import is_latlon, is_postcode
 
 description = """
@@ -84,18 +85,18 @@ def index(request: Request):
 
 
 @app.get("/search/", response_class=HTMLResponse, include_in_schema=False)
-def search(request: Request, db: Session = Depends(get_db)):
+def search(request: Request, db: Elasticsearch = Depends(get_db)):
     q = request.query_params.get("q", "")
     context = {"request": request, "q": q}
     if q:
         areas = crud.search_areas(db, q)
-        context["result"] = list(zip(areas["result"], areas["scores"]))
-        context["total"] = areas["result_count"]
+        context["result"] = list(zip(areas.result, areas.scores))
+        context["total"] = areas.result_count
     return templates.TemplateResponse("areasearch.html.j2", context)
 
 
 @app.get("/areastypes/", response_class=HTMLResponse, include_in_schema=False)
-def all_areatypes(request: Request, db: Session = Depends(get_db)):
+def all_areatypes(request: Request, db: Elasticsearch = Depends(get_db)):
     return templates.TemplateResponse(
         "areatypes.html.j2",
         {"request": request, "areatypes": crud.get_all_areatypes(db)},
@@ -103,7 +104,7 @@ def all_areatypes(request: Request, db: Session = Depends(get_db)):
 
 
 @app.get("/areastypes/{areacode}", response_class=HTMLResponse, include_in_schema=False)
-def get_areatype(areacode: str, request: Request, db: Session = Depends(get_db)):
+def get_areatype(areacode: str, request: Request, db: Elasticsearch = Depends(get_db)):
     areatype = settings.AREA_TYPES.get(areacode)
     return templates.TemplateResponse(
         "areatype.html.j2",

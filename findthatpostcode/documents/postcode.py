@@ -1,11 +1,11 @@
 import datetime
 import hashlib
-import re
-from itertools import takewhile
+from typing import Any, Dict, List
 
 from elasticsearch_dsl import Document, field
 
 from findthatpostcode import settings
+from findthatpostcode.utils import PostcodeStr
 
 
 class Postcode(Document):
@@ -64,12 +64,15 @@ class Postcode(Document):
     class Index:
         name = settings.ES_INDICES["postcode"]
 
-    def area_codes(self):
+    def area_codes(self) -> List[str]:
         return [f for f in self.to_dict().values() if isinstance(f, str)]
 
     @classmethod
-    def from_csv(cls, record):
+    def from_csv(cls, original_record: Dict[str, str]) -> "Postcode":
         """Create a Postcode object from a NSPL record"""
+        record: Dict[str, Any] = original_record.copy()
+        postcode = PostcodeStr(record["pcds"])
+
         # null any blank fields (or ones with a dummy code in)
         for k in record:
             if record[k] == "" or record[k].endswith("99999999"):
@@ -90,78 +93,20 @@ class Postcode(Document):
             record["location"] = {"lat": record["lat"], "lon": record["long"]}
 
         # integer fields
-        for j in ["oseast1m", "osnrth1m", "usertype", "osgrdind", "imd"]:
+        for field in ["oseast1m", "osnrth1m", "usertype", "osgrdind", "imd"]:
             if record[field]:
                 record[field] = int(record[field])
 
         # add postcode hash
         record["hash"] = hashlib.md5(
-            record["pcds"].lower().replace(" ", "").encode()
+            postcode.lower().replace(" ", "").encode()
         ).hexdigest()
 
         # add postcode
-        (
-            postcode_area,
-            postcode_district,
-            postcode_sector,
-        ) = Postcode.split_postcode(record["pcds"])
-        record["postcode_area"] = postcode_area
-        record["postcode_district"] = postcode_district
-        record["postcode_sector"] = postcode_sector
+        record["postcode_area"] = postcode.postcode_area
+        record["postcode_district"] = postcode.postcode_district
+        record["postcode_sector"] = postcode.postcode_sector
 
         p = cls(**record)
-        p.meta.id = record["pcds"]
+        p.meta["id"] = postcode
         return p
-
-    @staticmethod
-    def parse_id(postcode):
-        """
-        standardises a postcode into the correct format
-        """
-
-        if postcode is None:
-            return None
-
-        # check for blank/empty
-        # put in all caps
-        postcode = postcode.strip().upper()
-        if postcode == "":
-            return None
-
-        # replace any non alphanumeric characters
-        postcode = re.sub("[^0-9a-zA-Z]+", "", postcode)
-
-        # check for nonstandard codes
-        if len(postcode) > 7:
-            return postcode
-
-        first_part = postcode[:-3].strip()
-        last_part = postcode[-3:].strip()
-
-        # check for incorrect characters
-        first_part = list(first_part)
-        last_part = list(last_part)
-        if last_part[0] == "O":
-            last_part[0] = "0"
-
-        return "%s %s" % ("".join(first_part), "".join(last_part))
-
-    @staticmethod
-    def split_postcode(postcode):
-        """
-        splits a postcode into its component parts
-        """
-
-        if postcode is None:
-            return None
-
-        postcode = Postcode.parse_id(postcode)
-        if postcode is None:
-            return None
-
-        postcode_first, _ = postcode.split()
-        postcode_area = "".join(takewhile(lambda x: x.isalpha(), postcode_first))
-        postcode_district = postcode_first
-        postcode_sector = postcode[:-2]
-
-        return postcode_area, postcode_district, postcode_sector

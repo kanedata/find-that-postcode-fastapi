@@ -1,7 +1,4 @@
-import datetime
-import hashlib
-import re
-from itertools import takewhile
+from typing import Any, Dict
 
 from elasticsearch_dsl import Document, field
 
@@ -33,12 +30,12 @@ class Entity(Document):
         name = settings.ES_INDICES["areatype"]
 
     @classmethod
-    def from_csv(cls, record):
+    def from_csv(cls, original_record: Dict[str, str]) -> "Entity":
 
         # clean the record
-        record = {
+        record: Dict[str, Any] = {
             k: None if v.strip() in ["", "n/a"] else v.strip()
-            for k, v in record.items()
+            for k, v in original_record.items()
         }
 
         # tidy up a couple of records

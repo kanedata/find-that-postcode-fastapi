@@ -1,19 +1,39 @@
 import dataclasses
+import io
+import json
 import logging
-from typing import List, Optional, Tuple
+from typing import (
+    Any,
+    Dict,
+    Generator,
+    List,
+    Literal,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+    overload,
+)
 
+from botocore.client import BaseClient
+from botocore.exceptions import ClientError
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Q
+from elasticsearch_dsl import Document, Q
 from geoalchemy2.comparator import Comparator
+from mypy_boto3_s3.client import S3Client
+from pydantic.dataclasses import dataclass
+from pydantic_geojson import FeatureModel
 
-from findthatpostcode import schemas
+from findthatpostcode import schemas, settings
 from findthatpostcode.db import get_db
 from findthatpostcode.documents import Area, Entity, Placename, Postcode
+from findthatpostcode.utils import PostcodeStr
 
 logger = logging.getLogger(__name__)
 
 
-def get_fields(model, fields: List[str] = None) -> List[str]:
+def get_fields(model, fields: Optional[List[str]] = None) -> List[str]:
     all_fields = model.__table__.columns.keys()
     if not fields:
         return all_fields
@@ -23,12 +43,14 @@ def get_fields(model, fields: List[str] = None) -> List[str]:
 def postcode_get_fields(
     fields: Optional[List[str]] = None,
 ) -> Tuple[List[str], List[str]]:
+    if fields is None:
+        fields = []
     if fields:
-        fields = set(fields)
-        name_fields = [f for f in fields if f.endswith("_name")]
-        fields.update([f.replace("_name", "") for f in name_fields])
-        fields.add("pcds")
-        fields = list(fields)
+        fields_set = set(fields)
+        name_fields = [f for f in fields_set if f.endswith("_name")]
+        fields_set.update([f.replace("_name", "") for f in name_fields])
+        fields_set.add("pcds")
+        fields = list(fields_set)
     else:
         name_fields = [
             f.name
@@ -38,18 +60,69 @@ def postcode_get_fields(
     return fields, name_fields
 
 
-def record_to_schema(record, schema, name_fields=None, name_lookup=None, **kwargs):
+@overload
+def record_to_schema(
+    record: Area,
+    schema: Type[schemas.Area],
+    name_fields: Optional[List[str]] = None,
+    name_lookup: Optional[Dict[str, Optional[str]]] = None,
+    **kwargs
+) -> schemas.Area:
+    ...
+
+
+@overload
+def record_to_schema(
+    record: Placename,
+    schema: Type[schemas.Placename],
+    name_fields: Optional[List[str]] = None,
+    name_lookup: Optional[Dict[str, Optional[str]]] = None,
+    **kwargs
+) -> schemas.Placename:
+    ...
+
+
+@overload
+def record_to_schema(
+    record: Postcode,
+    schema: Type[schemas.NearestPoint],
+    name_fields: Optional[List[str]] = None,
+    name_lookup: Optional[Dict[str, Optional[str]]] = None,
+    **kwargs
+) -> schemas.NearestPoint:
+    ...
+
+
+@overload
+def record_to_schema(
+    record: Postcode,
+    schema: Type[schemas.Postcode],
+    name_fields: Optional[List[str]] = None,
+    name_lookup: Optional[Dict[str, Optional[str]]] = None,
+    **kwargs
+) -> schemas.Postcode:
+    ...
+
+
+def record_to_schema(
+    record,
+    schema,
+    name_fields: Optional[List[str]] = None,
+    name_lookup: Optional[Dict[str, Optional[str]]] = None,
+    **kwargs
+):
     schema_keys = {field.name for field in dataclasses.fields(schema)}
-    record = schema(
+    record_values = dict(
         **kwargs,
         **{k: v for k, v in record.__dict__["_d_"].items() if k in schema_keys}
     )
+    new_record = schema(**record_values)
     if name_fields and name_lookup:
         for f in name_fields:
-            name = name_lookup.get(getattr(record, f.replace("_name", "")))
+            name = name_lookup.get(getattr(new_record, f.replace("_name", "")))
             if name:
-                setattr(record, f, name[0])
-    return record
+                setattr(new_record, f, name[0])
+    return new_record
 
 
 def get_area_names(db: Elasticsearch, area_codes: List = []) -> dict:
@@ -62,11 +135,14 @@ def get_area_names(db: Elasticsearch, area_codes: List = []) -> dict:
 
 
 def get_postcode(
-    db: Elasticsearch, postcode: str, fields: List[str] = None
-) -> schemas.Postcode:
-    postcode = Postcode.parse_id(postcode)
+    db: Elasticsearch, postcode: str, fields: Optional[List[str]] = None
+) -> Optional[schemas.Postcode]:
+    try:
+        postcode_parsed = PostcodeStr(postcode)
+    except ValueError:
+        return None
     fields, name_fields = postcode_get_fields(fields)
-    record = Postcode.get(id=postcode, using=db, _source_includes=fields)
+    record = Postcode.get(id=postcode_parsed, using=db, _source_includes=fields)
     if not record:
         return None
     name_lookup = get_area_names(db, record.area_codes())
@@ -75,11 +151,14 @@ def get_postcode(
 
 
 def get_postcodes(
-    db: Elasticsearch, postcodes: str, fields: List[str] = None
-) -> schemas.Postcode:
-    cleaned_postcodes = {
-        postcode: Postcode.parse_id(postcode) for postcode in postcodes
-    }
+    db: Elasticsearch, postcodes: List[str], fields: Optional[List[str]] = None
+) -> List[schemas.Postcode]:
+    cleaned_postcodes: Dict[str, Any] = {}
+    for postcode in postcodes:
+        try:
+            cleaned_postcodes[postcode] = PostcodeStr(postcode)
+        except ValueError:
+            cleaned_postcodes[postcode] = postcode
     fields, name_fields = postcode_get_fields(fields)
     records = {
         p.pcds: p
@@ -104,27 +183,23 @@ def get_postcodes(
 
 
 def get_nearest_postcode(
-    db: Elasticsearch, lat: float, long: float, fields: List[str] = None
-) -> schemas.NearestPoint:
-    return None
+    db: Elasticsearch, lat: float, long: float, fields: Optional[List[str]] = None
+) -> Optional[schemas.NearestPoint]:
     fields, name_fields = postcode_get_fields(fields)
-    record = (
-        db.query(models.Postcode)
-        .options(load_only(*get_fields(models.Postcode, fields)))
-        .order_by(
-            Comparator.distance_centroid(
-                models.Postcode.geom,
-                func.Geometry(
-                    func.ST_GeographyFromText("POINT({} {})".format(long, lat))
-                ),
-            )
-        )
-        .limit(1)
-        .first()
+    results = (
+        Postcode.search(using=db)
+        .query(Q("bool", must_not=Q("exists", field="doterm")))
+        .sort({"_geo_distance": dict(location={"lat": lat, "lon": long}, unit="m")})[
+            0:1
+        ]
+        .execute()
     )
+    if not results.hits:
+        return None
+    record: Postcode = results.hits[0]
     if not record:
         return None
-    name_lookup = get_area_names(db)
+    name_lookup = get_area_names(db, record.area_codes())
     return record_to_schema(
         record,
         schemas.NearestPoint,
@@ -136,35 +211,75 @@ def get_nearest_postcode(
 
 
 def get_postcode_by_hash(
-    db: Elasticsearch, hashes: List[str], fields: List[str] = None
-) -> List[schemas.Postcode]:
-    return None
+    db: Elasticsearch, hashes: List[str], fields: Optional[List[str]] = None
+) -> Generator[schemas.Postcode, None, None]:
     if not isinstance(hashes, list):
         hashes = [hashes]
     fields, name_fields = postcode_get_fields(fields)
+    query = []
+    for hash_ in hashes:
+        if len(hash_) < 3:
+            raise ValueError("Hash length must be at least 3 characters")
+        query.append(
+            {
+                "prefix": {
+                    "hash": hash_,
+                },
+            }
+        )
+
     results = (
-        db.query(models.Postcode)
-        .options(load_only(*get_fields(models.Postcode, fields)))
-        .filter(models.Postcode.hash4.in_(hashes))
-        .all()
+        Postcode.search(using=db)
+        .source(include=fields + name_fields)
+        .query("bool", should=query)
+        .execute()
     )
-    name_lookup = get_area_names(db)
+    name_lookup = {}
     for result in results:
+        area_codes_to_check = set()
+        for code in result.area_codes():
+            if code not in name_lookup:
+                area_codes_to_check.add(code)
+        if area_codes_to_check:
+            name_lookup = {
+                **name_lookup,
+                **get_area_names(db, list(area_codes_to_check)),
+            }
         yield record_to_schema(result, schemas.Postcode, name_fields, name_lookup)
 
 
 def get_area(
-    db: Elasticsearch, areacode: str, fields: List[str] = None
-) -> schemas.Area:
+    db: Elasticsearch, areacode: str, fields: Optional[List[str]] = None
+) -> Optional[schemas.Area]:
     record = Area.get(
         id=areacode, using=db, _source_includes=fields, _source_excludes=["boundary"]
     )
     if not record:
         return None
-    return record_to_schema(record, schemas.Area, has_boundary=record.has_boundary)
+    return record_to_schema(record, schemas.Area)
 
 
-def search_areas(db: Elasticsearch, q: str, pagination=None) -> List[schemas.Area]:
+def get_area_boundary(
+    db: Elasticsearch, client: S3Client, areacode: str
+) -> Optional[FeatureModel]:
+    record = Area.exists(id=areacode, using=db)
+    if not record:
+        return None
+
+    buffer = io.BytesIO()
+    prefix = areacode[0:3]
+    client.download_fileobj(
+        settings.S3_BUCKET,
+        "%s/%s.json" % (prefix, areacode),
+        buffer,
+    )
+    boundary = json.loads(buffer.getvalue().decode("utf-8"))
+    return boundary
+
+
+def search_areas(
+    db: Elasticsearch, q: str, pagination=None
+) -> schemas.AreaSearchResults:
     """
     Search for areas based on a name
     """
@@ -248,8 +363,8 @@ def search_areas(db: Elasticsearch, q: str, pagination=None) -> List[schemas.Are
     total = result.get("hits", {}).get("total", 0)
     if isinstance(total, dict):
         total = total.get("value", 0)
-    return {
-        "result": return_result,
-        "scores": [a["_score"] for a in result.get("hits", {}).get("hits", [])],
-        "result_count": total,
-    }
+    return schemas.AreaSearchResults(
+        result=return_result,
+        scores=[a["_score"] for a in result.get("hits", {}).get("hits", [])],
+        result_count=total,
+    )

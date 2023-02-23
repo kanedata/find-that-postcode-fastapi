@@ -1,12 +1,6 @@
-import datetime
-import hashlib
-import re
-from itertools import takewhile
-
 from elasticsearch_dsl import Document, field
 
 from findthatpostcode import settings
-from findthatpostcode.utils import process_date, process_int
 
 
 class Placename(Document):
