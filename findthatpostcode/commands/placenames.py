@@ -72,7 +72,6 @@ AREA_LOOKUP = [
 def import_placenames(
     url=settings.PLACENAMES_URL, es_index=PLACENAMES_INDEX, file=None
 ):
-
     if settings.DEBUG:
         requests_cache.install_cache()
 

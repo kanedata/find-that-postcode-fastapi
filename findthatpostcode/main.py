@@ -1,15 +1,14 @@
 import datetime
+from typing import Any
 
 from elasticsearch import Elasticsearch
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session
 
 from findthatpostcode import api, crud, graphql, settings
 from findthatpostcode.db import get_db
-from findthatpostcode.utils import is_latlon, is_postcode
 
 description = """
 This site presents data on UK postcodes and geographical areas, based on open data released by
@@ -56,7 +55,7 @@ app = FastAPI(
             "name": "Get postcode",
             "description": "Postcode lookup",
         }
-    ]
+    ],
     # license_info={
     #     "name": "Apache 2.0",
     #     "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
@@ -81,35 +80,37 @@ app.include_router(graphql.router, prefix="/graphql", include_in_schema=False)
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def index(request: Request):
-    return templates.TemplateResponse("index.html.j2", {"request": request})
+    return templates.TemplateResponse(request, "index.html.j2")
 
 
 @app.get("/search/", response_class=HTMLResponse, include_in_schema=False)
 def search(request: Request, db: Elasticsearch = Depends(get_db)):
+    print(db)
     q = request.query_params.get("q", "")
-    context = {"request": request, "q": q}
+    context: dict[str, Any] = {"q": q}
     if q:
         areas = crud.search_areas(db, q)
         context["result"] = list(zip(areas.result, areas.scores))
         context["total"] = areas.result_count
-    return templates.TemplateResponse("areasearch.html.j2", context)
+    return templates.TemplateResponse(request, "areasearch.html.j2", context)
 
 
-@app.get("/areastypes/", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/areatypes/", response_class=HTMLResponse, include_in_schema=False)
 def all_areatypes(request: Request, db: Elasticsearch = Depends(get_db)):
     return templates.TemplateResponse(
+        request,
         "areatypes.html.j2",
-        {"request": request, "areatypes": crud.get_all_areatypes(db)},
+        {"areatypes": crud.get_all_areatypes(db)},
     )
 
 
-@app.get("/areastypes/{areacode}", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/areatypes/{areacode}", response_class=HTMLResponse, include_in_schema=False)
 def get_areatype(areacode: str, request: Request, db: Elasticsearch = Depends(get_db)):
     areatype = settings.AREA_TYPES.get(areacode)
     return templates.TemplateResponse(
+        request,
         "areatype.html.j2",
         {
-            "request": request,
             "result": {
                 **areatype,
                 "attributes": {
@@ -125,4 +126,4 @@ def get_areatype(areacode: str, request: Request, db: Elasticsearch = Depends(ge
 
 @app.get("/addtocsv/", response_class=HTMLResponse, include_in_schema=False)
 def addtocsv(request: Request):
-    return templates.TemplateResponse("addtocsv.html.j2", {"request": request})
+    return templates.TemplateResponse(request, "addtocsv.html.j2")

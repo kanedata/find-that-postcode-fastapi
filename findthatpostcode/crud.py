@@ -7,27 +7,19 @@ from typing import (
     Dict,
     Generator,
     List,
-    Literal,
     Optional,
     Tuple,
     Type,
-    TypeVar,
-    Union,
     overload,
 )
 
-from botocore.client import BaseClient
-from botocore.exceptions import ClientError
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Document, Q
-from geoalchemy2.comparator import Comparator
+from elasticsearch_dsl import Q
 from mypy_boto3_s3.client import S3Client
-from pydantic.dataclasses import dataclass
 from pydantic_geojson import FeatureModel
 
 from findthatpostcode import schemas, settings
-from findthatpostcode.db import get_db
-from findthatpostcode.documents import Area, Entity, Placename, Postcode
+from findthatpostcode.documents import Area, Placename, Postcode
 from findthatpostcode.utils import PostcodeStr
 
 logger = logging.getLogger(__name__)
@@ -66,7 +58,7 @@ def record_to_schema(
     schema: Type[schemas.Area],
     name_fields: Optional[List[str]] = None,
     name_lookup: Optional[Dict[str, Optional[str]]] = None,
-    **kwargs
+    **kwargs,
 ) -> schemas.Area:
     ...
 
@@ -77,7 +69,7 @@ def record_to_schema(
     schema: Type[schemas.Placename],
     name_fields: Optional[List[str]] = None,
     name_lookup: Optional[Dict[str, Optional[str]]] = None,
-    **kwargs
+    **kwargs,
 ) -> schemas.Placename:
     ...
 
@@ -88,7 +80,7 @@ def record_to_schema(
     schema: Type[schemas.NearestPoint],
     name_fields: Optional[List[str]] = None,
     name_lookup: Optional[Dict[str, Optional[str]]] = None,
-    **kwargs
+    **kwargs,
 ) -> schemas.NearestPoint:
     ...
 
@@ -99,7 +91,7 @@ def record_to_schema(
     schema: Type[schemas.Postcode],
     name_fields: Optional[List[str]] = None,
     name_lookup: Optional[Dict[str, Optional[str]]] = None,
-    **kwargs
+    **kwargs,
 ) -> schemas.Postcode:
     ...
 
@@ -109,12 +101,12 @@ def record_to_schema(
     schema,
     name_fields: Optional[List[str]] = None,
     name_lookup: Optional[Dict[str, Optional[str]]] = None,
-    **kwargs
+    **kwargs,
 ):
     schema_keys = {field.name for field in dataclasses.fields(schema)}
     record_values = dict(
         **kwargs,
-        **{k: v for k, v in record.__dict__["_d_"].items() if k in schema_keys}
+        **{k: v for k, v in record.__dict__["_d_"].items() if k in schema_keys},
     )
     new_record = schema(**record_values)
     if name_fields and name_lookup:
@@ -338,17 +330,17 @@ def search_areas(
         result = db.search(
             index="geo_area,geo_placename",
             body=query,
-            from_=pagination.from_,
-            size=pagination.size,
-            _source_excludes=["boundary"],
-            ignore=[404],
+            from_=pagination.from_,  # type: ignore
+            size=pagination.size,  # type: ignore
+            _source_excludes=["boundary"],  # type: ignore
+            ignore=[404],  # type: ignore
         )
     else:
         result = db.search(
             index="geo_area,geo_placename",
             body=query,
-            _source_excludes=["boundary"],
-            ignore=[404],
+            _source_excludes=["boundary"],  # type: ignore
+            ignore=[404],  # type: ignore
         )
     return_result = []
     for a in result.get("hits", {}).get("hits", []):

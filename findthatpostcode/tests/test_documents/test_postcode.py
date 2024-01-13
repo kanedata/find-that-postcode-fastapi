@@ -1,8 +1,7 @@
-from typing import Optional, Tuple
+from typing import Tuple
 
 import pytest
 
-from findthatpostcode.documents import Postcode
 from findthatpostcode.utils import PostcodeStr
 
 
@@ -35,12 +34,12 @@ def test_parse_id(value, expected):
         ("", ValueError),
         (None, ValueError),
         ("   ", ValueError),
-        ("AB1 1AB", ("AB", "AB1", "AB1 1")),
-        ("AB1   1AB", ("AB", "AB1", "AB1 1")),
-        ("AB1 @$% 1AB", ("AB", "AB1", "AB1 1")),
-        ("ab1 1Ab", ("AB", "AB1", "AB1 1")),
-        ("AB1 OAB", ("AB", "AB1", "AB1 0")),
-        ("AB1A 1AB", ("AB", "AB1A", "AB1A 1")),
+        ("AB1 1CD", ("AB", "AB1", "AB1 1")),
+        ("AB1   1CD", ("AB", "AB1", "AB1 1")),
+        ("AB1 @$% 1CD", ("AB", "AB1", "AB1 1")),
+        ("ab1 1Cd", ("AB", "AB1", "AB1 1")),
+        ("AB1 OCD", ("AB", "AB1", "AB1 0")),
+        ("AB1A 1CD", ("AB", "AB1A", "AB1A 1")),
         # ("AB1A 1ABGB", ("AB", "AB1A", "AB1A 1")),
     ],
 )

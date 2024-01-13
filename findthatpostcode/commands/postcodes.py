@@ -22,7 +22,6 @@ PC_INDEX = Postcode.Index.name
 @click.option("--url", default=settings.NSPL_URL)
 @click.option("--file", default=None)
 def import_nspl(url=settings.NSPL_URL, es_index=PC_INDEX, file=None):
-
     if settings.DEBUG:
         requests_cache.install_cache()
 

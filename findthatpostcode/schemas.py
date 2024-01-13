@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Any, Dict, List, Literal, Optional
+from typing import List, Optional
 
 import strawberry
 from pydantic import BaseModel, Field

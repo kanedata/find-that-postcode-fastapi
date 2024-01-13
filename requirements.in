@@ -1,6 +1,5 @@
 fastapi
-black
-isort
+ruff
 uvicorn[standard]
 alembic
 sqlalchemy
@@ -12,7 +11,7 @@ requests-cache
 strawberry-graphql[fastapi]
 jinja2
 click
-elasticsearch-dsl
+elasticsearch-dsl>=7.0.0,<8.0.0
 tqdm
 shapely
 pytest

@@ -1,8 +1,7 @@
 import datetime
 import re
-from collections import UserString
 from itertools import takewhile
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional
 
 from elasticsearch.helpers import bulk
 
@@ -238,7 +237,6 @@ def is_postcode(q):
 
 class PostcodeStr:
     def __init__(self, postcode: str, *args, **kwargs):
-
         if postcode is None:
             raise ValueError(f"Invalid postcode {postcode}")
 

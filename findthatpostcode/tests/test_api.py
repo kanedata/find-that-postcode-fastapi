@@ -1,10 +1,4 @@
-import pytest
-from fastapi.testclient import TestClient
-
-from findthatpostcode.crud import Area, Postcode
-from findthatpostcode.main import app
-
-client = TestClient(app)
+from findthatpostcode.tests.fixtures import client
 
 
 def test_read_main():

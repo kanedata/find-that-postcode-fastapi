@@ -1,7 +1,7 @@
 import click
 from boto3 import session
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Document, Index
+from elasticsearch_dsl import Index
 from mypy_boto3_s3.client import S3Client
 
 from findthatpostcode import documents, settings

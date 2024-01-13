@@ -1,12 +1,9 @@
 import logging
-from typing import List
 
-from botocore.client import BaseClient
 from elasticsearch import Elasticsearch
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, status
 from mypy_boto3_s3.client import S3Client
 from pydantic_geojson import FeatureModel
-from sqlalchemy.orm import Session
 
 from findthatpostcode import crud
 from findthatpostcode.db import get_db, get_s3_client

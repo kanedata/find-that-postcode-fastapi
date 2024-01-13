@@ -8,7 +8,6 @@ import click
 import requests
 import requests_cache
 import tqdm
-from elasticsearch.helpers import bulk
 
 from findthatpostcode import db, settings
 from findthatpostcode.documents import Area
@@ -100,7 +99,6 @@ IMD_FIELDS = {
 @click.option("--es-index", default=AREA_INDEX)
 @click.option("--url", default=settings.IMD2019_URL)
 def import_imd2019(url=settings.IMD2019_URL, es_index=AREA_INDEX):
-
     if settings.DEBUG:
         requests_cache.install_cache()
 
@@ -139,14 +137,13 @@ def import_imd2019(url=settings.IMD2019_URL, es_index=AREA_INDEX):
                     }
                 },
             }
-        importer.add(area_update)
+            importer.add(area_update)
 
 
 @click.command("imd2015")
 @click.option("--es-index", default=AREA_INDEX)
 @click.option("--url", default=settings.IMD2015_URL)
 def import_imd2015(url=settings.IMD2015_URL, es_index=AREA_INDEX):
-
     if settings.DEBUG:
         requests_cache.install_cache()
 
@@ -155,7 +152,6 @@ def import_imd2015(url=settings.IMD2015_URL, es_index=AREA_INDEX):
     r = requests.get(url, stream=True)
 
     reader = csv.DictReader(codecs.iterdecode(r.iter_lines(), "utf-8-sig"))
-    area_updates = []
     with BulkImporter(es, "imd2015") as importer:
         for k, area in tqdm.tqdm(enumerate(reader)):
             area = {

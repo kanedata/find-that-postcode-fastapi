@@ -31,7 +31,6 @@ class Entity(Document):
 
     @classmethod
     def from_csv(cls, original_record: Dict[str, str]) -> "Entity":
-
         # clean the record
         record: Dict[str, Any] = {
             k: None if v.strip() in ["", "n/a"] else v.strip()

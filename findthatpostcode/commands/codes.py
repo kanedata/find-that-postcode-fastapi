@@ -3,7 +3,6 @@ Import commands for the register of geographic codes and code history database
 """
 import codecs
 import csv
-import datetime
 import io
 import zipfile
 from collections import defaultdict
@@ -33,7 +32,6 @@ EQUIVALENT_CODES = {
 @click.option("--es-index", default=ENTITY_INDEX)
 @click.option("--file", default=None)
 def import_rgc(url=settings.RGC_URL, es_index=ENTITY_INDEX, file=None):
-
     if settings.DEBUG:
         requests_cache.install_cache()
 
@@ -75,7 +73,6 @@ def import_chd(
     file=None,
     encoding=settings.DEFAULT_ENCODING,
 ):
-
     if settings.DEBUG:
         requests_cache.install_cache()
 
@@ -91,9 +88,9 @@ def import_chd(
     areas_cache = defaultdict(list)
     areas = {}
 
-    change_history = None
-    changes = None
-    equivalents = None
+    change_history: str | None = None
+    changes: str | None = None
+    equivalents: str | None = None
     for f in z.namelist():
         if f.lower().startswith("changehistory") and f.lower().endswith(".csv"):
             change_history = f
@@ -101,6 +98,13 @@ def import_chd(
             changes = f
         elif f.lower().startswith("equivalents") and f.lower().endswith(".csv"):
             equivalents = f
+
+    if change_history is None:
+        raise Exception("Change history file not found")
+    if changes is None:
+        raise Exception("Changes file not found")
+    if equivalents is None:
+        raise Exception("Equivalents file not found")
 
     with z.open(change_history, "r") as infile:
         click.echo("Opening {}".format(infile.name))
@@ -195,7 +199,6 @@ def import_chd(
 def import_msoa_names(
     url=settings.MSOA_URL, es_index=AREA_INDEX, file=None, encoding="utf-8-sig"
 ):
-
     if settings.DEBUG:
         requests_cache.install_cache()
 

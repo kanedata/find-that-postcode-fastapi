@@ -32,7 +32,6 @@ def import_boundaries(
     es_index: str = AREA_INDEX,
     remove: bool = False,
 ):
-
     es = db.get_db()
 
     if remove:

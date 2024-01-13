@@ -1,5 +1,8 @@
 import os
 
+from fastapi.testclient import TestClient
+
+from findthatpostcode.main import app, get_db
 from findthatpostcode.settings import CHD_URL, MSOA_URL, NSPL_URL, RGC_URL
 
 MOCK_FILES = {
@@ -35,12 +38,20 @@ class MockES:
     def get(self, index_name, doc_type, id):
         return self._index[id]
 
-    def search(self, index_name, doc_type, body):
+    def search(self, *args, **kwargs):
         return {
             "hits": {
                 "hits": [
                     {"_source": self._index[id]}
-                    for id in body["query"]["ids"]["values"]
+                    for id in kwargs["body"]["query"]["ids"]["values"]
                 ]
             }
         }
+
+
+def override_get_db():
+    return MockES()
+
+
+app.dependency_overrides[get_db] = override_get_db
+client = TestClient(app)

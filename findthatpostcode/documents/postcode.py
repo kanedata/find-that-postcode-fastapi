@@ -79,23 +79,25 @@ class Postcode(Document):
                 record[k] = None
 
         # date fields
-        for field in ["dointr", "doterm"]:
-            if record[field]:
-                record[field] = datetime.datetime.strptime(record[field], "%Y%m")
+        for date_field in ["dointr", "doterm"]:
+            if record[date_field]:
+                record[date_field] = datetime.datetime.strptime(
+                    record[date_field], "%Y%m"
+                )
 
         # latitude and longitude
-        for field in ["lat", "long"]:
-            if record[field]:
-                record[field] = float(record[field])
-                if record[field] == 99.999999:
-                    record[field] = None
+        for geo_field in ["lat", "long"]:
+            if record[geo_field]:
+                record[geo_field] = float(record[geo_field])
+                if record[geo_field] == 99.999999:
+                    record[geo_field] = None
         if record["lat"] and record["long"]:
             record["location"] = {"lat": record["lat"], "lon": record["long"]}
 
         # integer fields
-        for field in ["oseast1m", "osnrth1m", "usertype", "osgrdind", "imd"]:
-            if record[field]:
-                record[field] = int(record[field])
+        for int_field in ["oseast1m", "osnrth1m", "usertype", "osgrdind", "imd"]:
+            if record[int_field]:
+                record[int_field] = int(record[int_field])
 
         # add postcode hash
         record["hash"] = hashlib.md5(
