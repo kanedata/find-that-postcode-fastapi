@@ -1,6 +1,6 @@
 from .area import Area
 from .entity import Entity
 from .placename import Placename
-from .postcode import Postcode
+from .postcode import Postcode, PostcodeSource
 
-__all__ = ["Postcode", "Entity", "Area", "Placename"]
+__all__ = ["Postcode", "Entity", "Area", "Placename", "PostcodeSource"]

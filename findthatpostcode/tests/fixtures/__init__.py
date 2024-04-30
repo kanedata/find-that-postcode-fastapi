@@ -3,14 +3,25 @@ import os
 from fastapi.testclient import TestClient
 
 from findthatpostcode.main import app, get_db
-from findthatpostcode.settings import CHD_URL, MSOA_URL, NSPL_URL, RGC_URL
+from findthatpostcode.settings import (
+    CHD_URL,
+    MSOA_URL,
+    NHSPD_URL,
+    NSPL_URL,
+    ONSPD_URL,
+    PCON_URL,
+    RGC_URL,
+)
 
 MOCK_FILES = {
     CHD_URL: os.path.join(
         os.path.dirname(__file__),
         "chd.zip",
     ),
-    MSOA_URL: os.path.join(os.path.dirname(__file__), "msoanames.csv"),
+    MSOA_URL: os.path.join(
+        os.path.dirname(__file__),
+        "msoanames.csv",
+    ),
     RGC_URL: os.path.join(
         os.path.dirname(__file__),
         "rgc.zip",
@@ -18,6 +29,18 @@ MOCK_FILES = {
     NSPL_URL: os.path.join(
         os.path.dirname(__file__),
         "nspl21.zip",
+    ),
+    ONSPD_URL: os.path.join(
+        os.path.dirname(__file__),
+        "onspd.zip",
+    ),
+    NHSPD_URL: os.path.join(
+        os.path.dirname(__file__),
+        "nhspd.zip",
+    ),
+    PCON_URL: os.path.join(
+        os.path.dirname(__file__),
+        "pcd_pcon.zip",
     ),
 }
 

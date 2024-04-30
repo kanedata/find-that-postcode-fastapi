@@ -38,6 +38,8 @@ S3_BUCKET = os.environ.get("S3_BUCKET", "geo-boundaries")
 # postcode data URLs
 NSPL_URL = "https://www.arcgis.com/sharing/rest/content/items/677cfc3ef56541999314efc795664ce9/data"
 ONSPD_URL = "https://www.arcgis.com/sharing/rest/content/items/a644dd04d18f4592b7d36705f93270d8/data"
+NHSPD_URL = "https://www.arcgis.com/sharing/rest/content/items/c290e7ec05d542e1a38d0822aaf3e634/data"
+PCON_URL = "https://www.arcgis.com/sharing/rest/content/items/0ce50b21cd5a4599b6df0452f7fed235/data"
 
 # area data URLs
 RGC_URL = "https://www.arcgis.com/sharing/rest/content/items/7216e9b54a1b49459aaaf59b3f122abc/data"
@@ -66,8 +68,8 @@ with open(
 KEY_AREA_TYPES = [
     ("Key", ["ctry", "rgn", "cty", "laua", "ward", "msoa11", "pcon"]),
     ("Secondary", ["ttwa", "pfa", "lep", "lsoa11", "oa11", "npark"]),
-    ("Health", ["ccg", "nhser", "hb", "lhb"]),
-    ("Other", ["eer", "bua11", "buasd11", "wz11", "teclec"]),
+    ("Health", ["ccg", "nhser", "lhb"]),
+    ("Other", ["bua11", "wz11"]),
 ]
 
 OTHER_CODES = {
@@ -368,3 +370,56 @@ RU11IND_CODES = {
     "7": "Remote Rural",
     "8": "Very Remote Rural",
 }
+
+
+NHSPD_FIELDNAMES = [
+    "pcd2",
+    "pcds",
+    "dointr",
+    "doterm",
+    "oseast100m",
+    "osnrth100m",
+    "oscty",
+    "odslaua",
+    "oslaua",
+    "osward",
+    "usertype",
+    "osgrdind",
+    "ctry",
+    "oshlthau",
+    "rgn",
+    "oldha",
+    "nhser",
+    "sicbl",
+    "psed",
+    "cened",
+    "edind",
+    "ward98",
+    "oa01",
+    "nhsrlo",
+    "hro",
+    "lsoa01",
+    "ur01ind",
+    "msoa01",
+    "cannet",
+    "scn",
+    "oshaprev",
+    "oldpct",
+    "oldhro",
+    "pcon",
+    "canreg",
+    "pct",
+    "oseast1m",
+    "osnrth1m",
+    "oa11",
+    "lsoa11",
+    "msoa11",
+    "calncv",
+    "icb",
+    "smhpc_aed",
+    "smhpc_as",
+    "smhpc_ct4",
+    "oa21",
+    "lsoa21",
+    "msoa21",
+]

@@ -4,11 +4,14 @@ from itertools import takewhile
 from typing import Any, Dict, Optional
 
 from elasticsearch.helpers import bulk
+from fastapi.templating import Jinja2Templates
+
+from findthatpostcode import settings
 
 LATLONG_REGEX = re.compile(r"^(?P<lat>\-?\d+\.[0-9]+),(?P<lon>\-?\d+\.\d+)$")
 POSTCODE_REGEX = re.compile(r"^[A-Z]{1,2}[0-9][0-9A-Z]? ?[0-9][A-Z]{2}$")
 POSTCODE_REGEX = re.compile(
-    r"^(([A-Z]{1,2}[0-9][A-Z0-9]?|ASCN|STHL|TDCU|BBND|[BFS]IQQ|PCRN|TKCA) ?[0-9][A-Z]{2}|BFPO ?[0-9]{1,4}|(KY[0-9]|MSR|VG|AI)[ -]?[0-9]{4}|[A-Z]{2} ?[0-9]{2}|GE ?CX|GIR ?0A{2}|SAN ?TA1)$"
+    r"^(([A-Z]{1,2}[0-9][A-Z0-9]?|ASCN|STHL|TDCU|BBND|[BFS]IQQ|PCRN|TKCA|NPT) ?[0-9][A-Z]{2}|BFPO ?[0-9]{1,4}|(KY[0-9]|MSR|VG|AI)[ -]?[0-9]{4}|[A-Z]{2} ?[0-9]{2}|GE ?CX|GIR ?0A{2}|SAN ?TA1)$"
 )
 
 POSTCODE_AREAS = {
@@ -318,3 +321,22 @@ class PostcodeStr:
         'SW1A 1'
         """
         return self.postcode[:-2]
+
+    @property
+    def outward(self) -> str:
+        return self._outward_code
+
+    @property
+    def inward(self) -> str:
+        return self._inward_code
+
+
+templates = Jinja2Templates(directory="templates")
+templates.env.globals.update(
+    dict(
+        now=datetime.datetime.now(),
+        key_area_types=settings.KEY_AREA_TYPES,
+        other_codes=settings.OTHER_CODES,
+        area_types=settings.AREA_TYPES,
+    )
+)

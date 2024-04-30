@@ -2,7 +2,7 @@ import click
 
 from findthatpostcode.db import init_db
 
-from . import boundaries, codes, placenames, postcodes, stats
+from . import boundaries, codes, placenames, postcodes, stats, utils
 
 
 @click.command("init-db")
@@ -31,5 +31,14 @@ import_group.add_command(boundaries.import_boundaries)
 import_group.add_command(placenames.import_placenames)
 import_group.add_command(stats.import_imd2015)
 import_group.add_command(stats.import_imd2019)
+
+
+@cli.group(name="utils")
+def utils_group():
+    pass
+
+
+utils_group.add_command(utils.sample_zip)
+
 
 cli.add_command(init_db_command)

@@ -1,11 +1,19 @@
 import datetime
 import hashlib
+from enum import Enum
 from typing import Any, Dict, List
 
 from elasticsearch_dsl import Document, field
 
 from findthatpostcode import settings
 from findthatpostcode.utils import PostcodeStr
+
+
+class PostcodeSource(Enum):
+    NSPL = "nspl"
+    ONSPD = "onspd"
+    NHSPD = "nhspd"
+    PCON = "pcon"  # new parliamentary constituencies - separate lookup provided
 
 
 class Postcode(Document):
@@ -68,10 +76,14 @@ class Postcode(Document):
         return [f for f in self.to_dict().values() if isinstance(f, str)]
 
     @classmethod
-    def from_csv(cls, original_record: Dict[str, str]) -> "Postcode":
+    def from_csv(
+        cls,
+        original_record: Dict[str, str],
+    ) -> "Postcode":
         """Create a Postcode object from a NSPL record"""
         record: Dict[str, Any] = original_record.copy()
         postcode = PostcodeStr(record["pcds"])
+        record["pcds"] = str(postcode)
 
         # null any blank fields (or ones with a dummy code in)
         for k in record:
@@ -80,24 +92,36 @@ class Postcode(Document):
 
         # date fields
         for date_field in ["dointr", "doterm"]:
-            if record[date_field]:
+            if record.get(date_field):
                 record[date_field] = datetime.datetime.strptime(
                     record[date_field], "%Y%m"
                 )
 
         # latitude and longitude
         for geo_field in ["lat", "long"]:
-            if record[geo_field]:
+            if record.get(geo_field):
                 record[geo_field] = float(record[geo_field])
                 if record[geo_field] == 99.999999:
                     record[geo_field] = None
-        if record["lat"] and record["long"]:
+        if record.get("lat") and record.get("long"):
             record["location"] = {"lat": record["lat"], "lon": record["long"]}
 
         # integer fields
-        for int_field in ["oseast1m", "osnrth1m", "usertype", "osgrdind", "imd"]:
-            if record[int_field]:
-                record[int_field] = int(record[int_field])
+        for int_field in [
+            "oseast1m",
+            "osnrth1m",
+            "oseast100m",
+            "osnrth100m",
+            "usertype",
+            "osgrdind",
+            "imd",
+        ]:
+            if record.get(int_field):
+                value = record[int_field].strip()
+                if value == "":
+                    record[int_field] = None
+                else:
+                    record[int_field] = int(value)
 
         # add postcode hash
         record["hash"] = hashlib.md5(

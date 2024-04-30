@@ -3,7 +3,7 @@
 Run a development server
 
 ```
-uvicorn findthatpostcode:app --debug --reload
+uvicorn findthatpostcode:app --reload
 ```
 
 ## Testing

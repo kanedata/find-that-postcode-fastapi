@@ -59,8 +59,7 @@ def record_to_schema(
     name_fields: Optional[List[str]] = None,
     name_lookup: Optional[Dict[str, Optional[str]]] = None,
     **kwargs,
-) -> schemas.Area:
-    ...
+) -> schemas.Area: ...
 
 
 @overload
@@ -70,8 +69,7 @@ def record_to_schema(
     name_fields: Optional[List[str]] = None,
     name_lookup: Optional[Dict[str, Optional[str]]] = None,
     **kwargs,
-) -> schemas.Placename:
-    ...
+) -> schemas.Placename: ...
 
 
 @overload
@@ -81,8 +79,7 @@ def record_to_schema(
     name_fields: Optional[List[str]] = None,
     name_lookup: Optional[Dict[str, Optional[str]]] = None,
     **kwargs,
-) -> schemas.NearestPoint:
-    ...
+) -> schemas.NearestPoint: ...
 
 
 @overload
@@ -92,8 +89,7 @@ def record_to_schema(
     name_fields: Optional[List[str]] = None,
     name_lookup: Optional[Dict[str, Optional[str]]] = None,
     **kwargs,
-) -> schemas.Postcode:
-    ...
+) -> schemas.Postcode: ...
 
 
 def record_to_schema(

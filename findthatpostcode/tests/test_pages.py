@@ -81,13 +81,19 @@ def test_areatypes_html():
     assert "Browse by area type" in response.text
 
 
+def test_addtocsv_redirect():
+    response = client.get("/addtocsv/", follow_redirects=False)
+    assert response.status_code == 302
+    assert response.headers["location"] == str(client.base_url) + "/tools/addtocsv"
+
+
 def test_addtocsv():
-    response = client.get("/addtocsv/")
+    response = client.get("/tools/addtocsv")
     assert response.status_code == 200
     assert response.headers["content-type"] == "text/html; charset=utf-8"
     assert "Add fields to CSV" in response.text
     assert (
-        "Therefore it is recommended that you think carefully before using this tool with any personal or sensitive data."
+        "think carefully before using this tool with any personal or sensitive data."
         in response.text
     )
 

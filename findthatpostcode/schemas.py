@@ -1,5 +1,5 @@
 from datetime import date
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 import strawberry
 from pydantic import BaseModel, Field
@@ -7,18 +7,29 @@ from pydantic.dataclasses import dataclass
 
 from findthatpostcode import settings
 from findthatpostcode.commands.placenames import PLACE_TYPES
+from findthatpostcode.utils import PostcodeStr
 
 
 class HTTPNotFoundError(BaseModel):
     detail: str
 
 
+oac11_type = Literal["supergroup", "group", "subgroup"]
+
+
+@strawberry.type(description="Lat Long")
+@dataclass
+class LatLng:
+    lat: float
+    lon: float
+
+
 @strawberry.type(description="Postcode")
 @dataclass
 class Postcode:
-    # pcd: str
-    # pcd2: str
     pcds: str
+    pcd: Optional[str] = None
+    pcd2: Optional[str] = None
     dointr: Optional[date] = None
     doterm: Optional[date] = None
     usertype: Optional[int] = None
@@ -34,21 +45,16 @@ class Postcode:
     laua_name: Optional[str] = Field(None, title="Local Authority (Name)")
     ward: Optional[str] = Field(None, title="Ward (GSS Code)")
     ward_name: Optional[str] = Field(None, title="Ward (Name)")
-    hlthau: Optional[str] = Field(None, title="Health Authority (GSS Code)")
-    hlthau_name: Optional[str] = Field(None, title="Health Authority (Name)")
-    nhser: Optional[str] = None
+    nhser: Optional[str] = Field(None, title="NHS England Region (GSS Code)")
+    nhser_name: Optional[str] = Field(None, title="NHS England Region (Name)")
     ctry: Optional[str] = Field(None, title="Country (GSS Code)")
     ctry_name: Optional[str] = Field(None, title="Country (Name)")
     rgn: Optional[str] = Field(None, title="Region (GSS Code)")
     rgn_name: Optional[str] = Field(None, title="Region (Name)")
     pcon: Optional[str] = Field(None, title="Parliamentary Constituency (GSS Code)")
     pcon_name: Optional[str] = Field(None, title="Parliamentary Constituency (Name)")
-    eer: Optional[str] = None
-    teclec: Optional[str] = None
     ttwa: Optional[str] = Field(None, title="Travel to Work Area (GSS Code)")
     ttwa_name: Optional[str] = Field(None, title="Travel to Work Area (Name)")
-    pct: Optional[str] = Field(None, title="Primary Care Trust (GSS Code)")
-    pct_name: Optional[str] = Field(None, title="Primary Care Trust (Name)")
     nuts: Optional[str] = None
     npark: Optional[str] = Field(None, title="National Park (GSS Code)")
     npark_name: Optional[str] = Field(None, title="National Park (Name)")
@@ -56,11 +62,12 @@ class Postcode:
     lsoa11_name: Optional[str] = Field(None, title="Lower Super Output Area (Name)")
     msoa11: Optional[str] = Field(None, title="Middle Super Output Area (GSS Code)")
     msoa11_name: Optional[str] = Field(None, title="Middle Super Output Area (Name)")
-    wz11: Optional[str] = None
+    wz11: Optional[str] = Field(None, title="Workplace Zone (GSS Code)")
+    wz11_name: Optional[str] = Field(None, title="Workplace Zone (Name)")
     ccg: Optional[str] = Field(None, title="Clinical Commissioning Group (GSS Code)")
     ccg_name: Optional[str] = Field(None, title="Clinical Commissioning Group (Name)")
-    bua11: Optional[str] = None
-    buasd11: Optional[str] = None
+    bua11: Optional[str] = Field(None, title="Built up Area (GSS Code)")
+    bua11_name: Optional[str] = Field(None, title="Built up Area (Name)")
     ru11ind: Optional[str] = None
     oac11: Optional[str] = None
     lat: Optional[float] = Field(None, title="Latitude")
@@ -71,14 +78,64 @@ class Postcode:
     lep2_name: Optional[str] = Field(
         None, title="Local Enterprise Partnership 2 (Name)"
     )
-    pfa: Optional[str] = None
+    pfa: Optional[str] = Field(None, title="Police Force Area (GSS Code)")
+    pfa_name: Optional[str] = Field(None, title="Police Force Area (Name)")
     imd: Optional[int] = None
-    calncv: Optional[str] = None
     stp: Optional[str] = None
     # hash: Optional[str] = None
 
+    location: Optional[LatLng] = None
+
     class Config:
         orm_mode = True
+
+    @property
+    def pcd_outward(self) -> str:
+        return PostcodeStr(self.pcds).postcode_district
+
+    @property
+    def pcd_inward(self) -> str:
+        return PostcodeStr(self.pcds).inward
+
+    @property
+    def pcd_area(self) -> str:
+        return PostcodeStr(self.pcds).postcode_area
+
+    @property
+    def pcd_district(self) -> str:
+        # district is another name for outward code
+        return self.pcd_outward
+
+    @property
+    def pcd_sector(self) -> str:
+        return PostcodeStr(self.pcds).postcode_sector
+
+    @property
+    def id(self) -> str:
+        return self.pcds
+
+    def get_area(self, areatype) -> Optional["Area"]:
+        area_code = getattr(self, areatype, None)
+        if not isinstance(area_code, str):
+            return None
+        return Area(
+            code=area_code,
+            name=getattr(self, areatype + "_name", area_code),
+            entity=area_code[0:3],
+        )
+
+    def get_oac11(self, oactype: oac11_type) -> Optional[str]:
+        oac11 = self.oac11
+        if not isinstance(oac11, str):
+            return None
+        type_index = ["supergroup", "group", "subgroup"].index(oactype)
+        return settings.OAC11_CODE[oac11][type_index]
+
+    def get_ru11ind_decsription(self) -> Optional[str]:
+        ru11ind = self.ru11ind
+        if not isinstance(ru11ind, str):
+            return None
+        return settings.RU11IND_CODES.get(ru11ind)
 
 
 @dataclass
@@ -98,7 +155,7 @@ class NearestPoint(Postcode, Point):
 @dataclass
 class Area:
     code: str
-    name: str
+    name: Optional[str] = None
     name_welsh: Optional[str] = None
     areachect: Optional[float] = None
     areaehect: Optional[float] = None
