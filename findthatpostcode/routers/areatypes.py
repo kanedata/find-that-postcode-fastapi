@@ -4,7 +4,6 @@ from fastapi.responses import HTMLResponse
 
 from findthatpostcode import crud, settings
 from findthatpostcode.db import get_db
-from findthatpostcode.schemas import Postcode
 from findthatpostcode.utils import templates
 
 router = APIRouter(include_in_schema=False)
